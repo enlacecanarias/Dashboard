@@ -1,0 +1,2516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Arias</title>
+  <style>
+:root {
+  --color-fondo: #f4f5f9;
+  --color-sidebar: #ffffff;
+  --color-card: #ffffff;
+  --color-card-hover: #f0f2f8;
+  --color-borde: #e0e3f0;
+  --color-primario: #3b7de8;
+  --color-primario-hover: #2563d4;
+  --color-secundario: #6c5ecf;
+  --color-exito: #1aaa6e;
+  --color-alerta: #d97706;
+  --color-peligro: #dc2626;
+  --color-texto: #1a1c2e;
+  --color-texto-suave: #5b6080;
+  --color-texto-muy-suave: #9aa0c0;
+  --color-alcampo: #2563d4;
+  --color-carrefour: #dc2626;
+  --color-hiperdino: #1aaa6e;
+  --color-corte-ingles: #d97706;
+  --color-spar: #7c3aed;
+  --color-mercadona: #0891b2;
+  --color-tu-trebol: #be185d;
+  --fuente-base: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --radio-tarjeta: 10px;
+  --sombra: 0 2px 12px rgba(0,0,0,0.08);
+  --ancho-sidebar: 220px;
+  --alto-topbar: 56px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--fuente-base);
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Tipografía */
+h1 { font-size: 1.5rem; font-weight: 700; }
+h2 { font-size: 1.2rem; font-weight: 600; }
+h3 { font-size: 1rem; font-weight: 600; }
+h4 { font-size: 0.875rem; font-weight: 600; color: var(--color-texto-suave); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Layout principal */
+.layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--ancho-sidebar);
+  background: var(--color-sidebar);
+  border-right: 1px solid var(--color-borde);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.sidebar-logo {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.sidebar-logo img {
+  height: 32px;
+  width: auto;
+}
+
+.sidebar-logo-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primario);
+}
+
+.sidebar-logo-sub {
+  font-size: 0.7rem;
+  color: var(--color-texto-suave);
+  margin-top: 2px;
+}
+
+.sidebar-seccion {
+  padding: 16px 8px 4px;
+}
+
+.sidebar-seccion-titulo {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--color-texto-muy-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0 8px;
+  margin-bottom: 4px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--color-texto-suave);
+  transition: all 0.15s;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-item:hover {
+  background: var(--color-card);
+  color: var(--color-texto);
+}
+
+.sidebar-item.activo {
+  background: rgba(79, 142, 247, 0.15);
+  color: var(--color-primario);
+  font-weight: 600;
+}
+
+.sidebar-item .icono {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+/* Área de contenido */
+.contenido-principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Topbar */
+.topbar {
+  height: var(--alto-topbar);
+  background: var(--color-sidebar);
+  border-bottom: 1px solid var(--color-borde);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+
+.topbar-titulo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.topbar-controles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Área de página */
+.pagina {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: none;
+}
+
+.pagina.activa {
+  display: block;
+}
+
+/* Tarjetas */
+.tarjeta {
+  background: var(--color-card);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  padding: 16px;
+  box-shadow: var(--sombra);
+}
+
+.tarjeta-titulo {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+/* Grid de KPIs */
+.grid-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kpi {
+  background: var(--color-card);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  padding: 16px;
+  text-align: center;
+}
+
+.kpi-valor {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primario);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.kpi-etiqueta {
+  font-size: 0.75rem;
+  color: var(--color-texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Grid de gráficas */
+.grid-graficas {
+  display: grid;
+  gap: 16px;
+}
+
+.grid-graficas.col-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-graficas.col-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.grid-graficas.col-1-2 {
+  grid-template-columns: 1fr 2fr;
+}
+
+.grid-graficas.col-2-1 {
+  grid-template-columns: 2fr 1fr;
+}
+
+.grafica-contenedor {
+  position: relative;
+  height: 280px;
+}
+
+/* Filtros */
+.barra-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+  align-items: flex-end;
+}
+
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filtro-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filtro-select,
+.filtro-input {
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  color: var(--color-texto);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  font-family: var(--fuente-base);
+  min-width: 140px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235b6080'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+  transition: border-color 0.15s;
+}
+
+.filtro-select:hover,
+.filtro-input:hover {
+  border-color: var(--color-primario);
+}
+
+.filtro-select:focus,
+.filtro-input:focus {
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 2px rgba(79,142,247,0.2);
+}
+
+.filtro-input[type="date"],
+.filtro-input[type="text"] {
+  background-image: none;
+  padding-right: 10px;
+}
+
+.btn {
+  background: var(--color-primario);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--fuente-base);
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: var(--color-primario-hover);
+}
+
+.btn-secundario {
+  background: transparent;
+  color: var(--color-texto-suave);
+  border: 1px solid var(--color-borde);
+}
+
+.btn-secundario:hover {
+  background: var(--color-card);
+  color: var(--color-texto);
+}
+
+/* Tabla */
+.tabla-contenedor {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 480px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+thead th {
+  background: var(--color-fondo);
+  color: var(--color-texto-suave);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 12px;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  border-bottom: 2px solid var(--color-borde);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+thead th:hover {
+  color: var(--color-primario);
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--color-borde);
+  transition: background 0.1s;
+}
+
+tbody tr:hover {
+  background: var(--color-card-hover);
+}
+
+tbody td {
+  padding: 9px 12px;
+  color: var(--color-texto);
+  white-space: nowrap;
+}
+
+/* Badge */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.badge-si { background: rgba(247,95,95,0.2); color: var(--color-peligro); }
+.badge-no { background: rgba(46,207,138,0.2); color: var(--color-exito); }
+
+/* Cadenas */
+.badge-alcampo   { background: rgba(37,99,212,0.12);  color: var(--color-alcampo); }
+.badge-alteza    { background: rgba(15,118,110,0.12); color: #0f766e; }
+.badge-carrefour { background: rgba(220,38,38,0.12);  color: var(--color-carrefour); }
+.badge-hiperdino { background: rgba(26,170,110,0.12); color: var(--color-hiperdino); }
+.badge-corte     { background: rgba(217,119,6,0.12);  color: var(--color-corte-ingles); }
+.badge-spar      { background: rgba(124,58,237,0.12); color: var(--color-spar); }
+.badge-trebol    { background: rgba(190,24,93,0.12);  color: var(--color-tu-trebol); }
+
+/* Paginación */
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 0 0;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
+
+.paginacion button {
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  color: var(--color-texto);
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.paginacion button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Loading */
+.cargando {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px;
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-borde);
+  border-top-color: var(--color-primario);
+  border-radius: 50%;
+  animation: girar 0.7s linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+/* Error */
+.error-msg {
+  background: rgba(247,95,95,0.1);
+  border: 1px solid rgba(247,95,95,0.3);
+  border-radius: var(--radio-tarjeta);
+  padding: 16px;
+  color: var(--color-peligro);
+  margin: 16px 0;
+}
+
+/* Sin datos */
+.sin-datos {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-borde); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-texto-muy-suave); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  :root { --ancho-sidebar: 180px; }
+  .grid-graficas.col-2,
+  .grid-graficas.col-3,
+  .grid-graficas.col-1-2,
+  .grid-graficas.col-2-1 {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script>
+// utils.js - Funciones comunes para todos los dashboards
+
+// URL del Apps Script (se sobreescribe en cada dashboard)
+window.APPS_SCRIPT_URL = '';
+
+// Cache de datos cargados
+const _cache = {};
+
+/**
+ * Carga datos desde el Apps Script Web App.
+ * @param {string} sheet  - 'gpv' o 'ecommerce'
+ * @param {string} tab    - Nombre de la pestaña
+ * @param {number} limit  - Nº máximo de registros (0 = todos, devuelve los últimos N)
+ * @returns {Promise<Array>} Array de objetos
+ */
+async function cargarDatos(sheet, tab, limit = 0) {
+  const clave = `${sheet}::${tab}::${limit}`;
+  if (_cache[clave]) return _cache[clave];
+
+  let url = `${window.APPS_SCRIPT_URL}?sheet=${encodeURIComponent(sheet)}&tab=${encodeURIComponent(tab)}`;
+  if (limit > 0) url += `&limit=${limit}`;
+
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`Error ${resp.status} al cargar ${sheet}/${tab}`);
+
+  const datos = await resp.json();
+  if (datos.error) throw new Error(datos.error);
+
+  _cache[clave] = datos;
+  return datos;
+}
+
+/**
+ * Invalida la cache de una pestaña concreta o toda la cache.
+ */
+function limpiarCache(sheet, tab) {
+  if (sheet && tab) delete _cache[`${sheet}::${tab}`];
+  else Object.keys(_cache).forEach(k => delete _cache[k]);
+}
+
+// Alias para compatibilidad con la convención del proyecto
+async function leerGoogleSheet(sheetAlias, tab) {
+  return cargarDatos(sheetAlias, tab);
+}
+
+// ── Formateo ─────────────────────────────────────────────
+
+function formatearPrecio(v) {
+  if (v == null || v === '') return '-';
+  const n = parseFloat(String(v).replace(',', '.'));
+  if (isNaN(n)) return v;
+  return n.toFixed(2).replace('.', ',') + ' €';
+}
+
+function formatearNumero(v, decimales = 0) {
+  if (v == null || v === '') return '-';
+  const n = parseFloat(String(v).replace(',', '.'));
+  if (isNaN(n)) return v;
+  return n.toLocaleString('es-ES', { minimumFractionDigits: decimales, maximumFractionDigits: decimales });
+}
+
+function formatearFecha(v) {
+  if (!v) return '-';
+  if (v instanceof Date) return v.toLocaleDateString('es-ES');
+  const d = new Date(v);
+  if (!isNaN(d)) return d.toLocaleDateString('es-ES');
+  return String(v);
+}
+
+/**
+ * Formatea duración almacenada como timestamp Excel (1899-12-30THH:MM:SS.000Z)
+ */
+function formatearDuracion(v) {
+  if (!v) return '-';
+  const d = new Date(v);
+  if (isNaN(d)) return String(v);
+  const h = d.getUTCHours();
+  const m = d.getUTCMinutes();
+  if (h === 0 && m === 0) return '-';
+  if (h === 0) return `${m}min`;
+  return `${h}h ${String(m).padStart(2, '0')}min`;
+}
+
+function formatearPorcentaje(v) {
+  if (v == null || v === '') return '-';
+  const n = parseFloat(String(v).replace(',', '.'));
+  if (isNaN(n)) return v;
+  return n.toFixed(1) + '%';
+}
+
+// ── Filtros ───────────────────────────────────────────────
+
+/**
+ * Obtiene valores únicos de una columna de un array de datos.
+ */
+function valoresUnicos(datos, columna) {
+  const set = new Set();
+  datos.forEach(row => {
+    const v = row[columna];
+    if (v != null && v !== '') set.add(String(v));
+  });
+  return [...set].sort();
+}
+
+/**
+ * Rellena un <select> con los valores únicos de una columna.
+ */
+function rellenarSelect(selectId, datos, columna, etiquetaTodos = 'Todos') {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = `<option value="">${etiquetaTodos}</option>`;
+  valoresUnicos(datos, columna).forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    sel.appendChild(opt);
+  });
+  if (prev) sel.value = prev;
+}
+
+/**
+ * Filtra un array de datos por un mapa de {columna: valor}.
+ * Valores vacíos ('') no filtran.
+ */
+function filtrarDatos(datos, filtros) {
+  return datos.filter(row => {
+    return Object.entries(filtros).every(([col, val]) => {
+      if (!val) return true;
+      return String(row[col] ?? '').toLowerCase() === String(val).toLowerCase();
+    });
+  });
+}
+
+/**
+ * Filtra por rango de fechas.
+ */
+function filtrarPorFecha(datos, columnaFecha, desde, hasta) {
+  if (!desde && !hasta) return datos;
+  return datos.filter(row => {
+    const f = new Date(row[columnaFecha]);
+    if (isNaN(f)) return true;
+    if (desde && f < new Date(desde)) return false;
+    if (hasta && f > new Date(hasta)) return false;
+    return true;
+  });
+}
+
+// ── Colores cadenas ───────────────────────────────────────
+
+const COLORES_CADENAS = {
+  'ALCAMPO':        '#2563d4',
+  'ALTEZA':         '#0f766e',
+  'CARREFOUR':      '#dc2626',
+  'EL CORTE INGLES':'#d97706',
+  'HIPERDINO':      '#1aaa6e',
+  'EUROSPAR':       '#1aaa6e',
+  'SPAR':           '#7c3aed',
+  'TU TREBOL':      '#be185d',
+};
+
+const PALETA = ['#2563d4','#1aaa6e','#d97706','#dc2626','#7c3aed','#0891b2','#be185d','#0f766e','#ca8a04'];
+
+function colorCadena(nombre) {
+  if (!nombre) return PALETA[0];
+  const clave = String(nombre).toUpperCase();
+  for (const [key, color] of Object.entries(COLORES_CADENAS)) {
+    if (clave.includes(key)) return color;
+  }
+  return PALETA[Object.keys(COLORES_CADENAS).length % PALETA.length];
+}
+
+function coloresParaLista(lista) {
+  return lista.map((nombre, i) => colorCadena(nombre) || PALETA[i % PALETA.length]);
+}
+
+// ── Chart.js helpers ──────────────────────────────────────
+
+const CHART_DEFAULTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      labels: { color: '#5b6080', font: { size: 11 }, boxWidth: 12 }
+    },
+    tooltip: {
+      backgroundColor: '#ffffff',
+      borderColor: '#e0e3f0',
+      borderWidth: 1,
+      titleColor: '#1a1c2e',
+      bodyColor: '#5b6080',
+    }
+  },
+  scales: {
+    x: {
+      ticks: { color: '#5b6080', font: { size: 11 } },
+      grid: { color: 'rgba(224,227,240,0.8)' },
+    },
+    y: {
+      ticks: { color: '#5b6080', font: { size: 11 } },
+      grid: { color: 'rgba(224,227,240,0.8)' },
+    }
+  }
+};
+
+const _charts = {};
+
+/**
+ * Crea o actualiza un gráfico Chart.js.
+ */
+function crearGrafica(canvasId, tipo, datos, opciones = {}) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return null;
+
+  if (_charts[canvasId]) {
+    _charts[canvasId].destroy();
+    delete _charts[canvasId];
+  }
+
+  const opcionesMerge = mergeDeep({ ...CHART_DEFAULTS }, opciones);
+
+  _charts[canvasId] = new Chart(canvas, { type: tipo, data: datos, options: opcionesMerge });
+  return _charts[canvasId];
+}
+
+/**
+ * Deep merge de objetos (para opciones de Chart.js).
+ */
+function mergeDeep(target, source) {
+  for (const key of Object.keys(source)) {
+    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      if (!target[key]) target[key] = {};
+      mergeDeep(target[key], source[key]);
+    } else {
+      target[key] = source[key];
+    }
+  }
+  return target;
+}
+
+// ── Tabla con paginación ──────────────────────────────────
+
+/**
+ * Renderiza una tabla paginada dentro de un contenedor.
+ * @param {string} contenedorId - ID del elemento contenedor
+ * @param {Array} columnas - [{key, label, formato}]
+ * @param {Array} datos - Array de objetos
+ * @param {number} filasPorPagina
+ */
+function renderizarTabla(contenedorId, columnas, datos, filasPorPagina = 50) {
+  const contenedor = document.getElementById(contenedorId);
+  if (!contenedor) return;
+
+  let pagina = 1;
+
+  function render() {
+    const total = datos.length;
+    const inicio = (pagina - 1) * filasPorPagina;
+    const fin = Math.min(inicio + filasPorPagina, total);
+    const filas = datos.slice(inicio, fin);
+
+    contenedor.innerHTML = '';
+
+    if (total === 0) {
+      contenedor.innerHTML = '<div class="sin-datos">Sin datos para mostrar</div>';
+      return;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'tabla-contenedor';
+
+    const tabla = document.createElement('table');
+    const thead = document.createElement('thead');
+    const trHead = document.createElement('tr');
+    columnas.forEach(col => {
+      const th = document.createElement('th');
+      th.textContent = col.label;
+      trHead.appendChild(th);
+    });
+    thead.appendChild(trHead);
+
+    const tbody = document.createElement('tbody');
+    filas.forEach(row => {
+      const tr = document.createElement('tr');
+      columnas.forEach(col => {
+        const td = document.createElement('td');
+        const val = row[col.key];
+        td.innerHTML = col.formato ? col.formato(val, row) : (val ?? '-');
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+
+    tabla.appendChild(thead);
+    tabla.appendChild(tbody);
+    wrapper.appendChild(tabla);
+    contenedor.appendChild(wrapper);
+
+    if (total > filasPorPagina) {
+      const pag = document.createElement('div');
+      pag.className = 'paginacion';
+      pag.innerHTML = `
+        <span>${inicio + 1} - ${fin} / ${total}</span>
+        <button onclick="this.parentElement._prev()" ${pagina === 1 ? 'disabled' : ''}>&lsaquo; Anterior</button>
+        <button onclick="this.parentElement._next()" ${fin >= total ? 'disabled' : ''}>Siguiente &rsaquo;</button>
+      `;
+      pag._prev = () => { if (pagina > 1) { pagina--; render(); } };
+      pag._next = () => { if (fin < total) { pagina++; render(); } };
+      contenedor.appendChild(pag);
+    }
+  }
+
+  render();
+}
+
+// ── Utilidades generales ──────────────────────────────────
+
+function mostrarCargando(id, mensaje = 'Cargando datos...') {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = `<div class="cargando"><div class="spinner"></div>${mensaje}</div>`;
+}
+
+function mostrarError(id, mensaje) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = `<div class="error-msg">${mensaje}</div>`;
+}
+
+function badgeCadena(nombre) {
+  if (!nombre) return '';
+  const n = String(nombre).toUpperCase();
+  let clase = 'badge';
+  if (n.includes('ALCAMPO'))                          clase += ' badge-alcampo';
+  else if (n.includes('ALTEZA'))                      clase += ' badge-alteza';
+  else if (n.includes('CARREFOUR'))                   clase += ' badge-carrefour';
+  else if (n.includes('HIPERDINO') || n.includes('EUROSPAR')) clase += ' badge-hiperdino';
+  else if (n.includes('CORTE INGLES') || n.includes('CORTE INGLÉS')) clase += ' badge-corte';
+  else if (n.includes('SPAR'))                        clase += ' badge-spar';
+  else if (n.includes('TREBOL'))                      clase += ' badge-trebol';
+  else                                                clase += ' badge-alcampo';
+  return `<span class="${clase}">${nombre}</span>`;
+}
+
+function badgeRotura(v) {
+  const val = String(v ?? '').toUpperCase();
+  if (val === 'SI' || val === 'SÍ' || val === 'TRUE' || val === '1') {
+    return '<span class="badge badge-si">Sí</span>';
+  }
+  return '<span class="badge badge-no">No</span>';
+}
+
+// Función de agrupación
+function agruparPor(datos, columna) {
+  const mapa = {};
+  datos.forEach(row => {
+    const key = row[columna] ?? 'Sin definir';
+    if (!mapa[key]) mapa[key] = [];
+    mapa[key].push(row);
+  });
+  return mapa;
+}
+
+// Suma de una columna numérica
+function sumarColumna(datos, columna) {
+  return datos.reduce((acc, row) => {
+    const v = parseFloat(String(row[columna] ?? '0').replace(',', '.'));
+    return acc + (isNaN(v) ? 0 : v);
+  }, 0);
+}
+
+// Media de una columna numérica
+function mediaColumna(datos, columna) {
+  const validos = datos.filter(row => {
+    const v = parseFloat(String(row[columna] ?? '').replace(',', '.'));
+    return !isNaN(v);
+  });
+  if (validos.length === 0) return 0;
+  return sumarColumna(validos, columna) / validos.length;
+}
+
+// Cuenta de filas
+function contarFilas(datos) {
+  return datos.length;
+}
+
+</script>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">Arias</div>
+      <div class="sidebar-logo-sub">Burgo de Arias</div>
+    </div>
+
+    <div class="sidebar-seccion">
+      <div class="sidebar-seccion-titulo">GPV</div>
+      <div class="sidebar-item" data-pagina="visitas" onclick="navegarA('visitas')">
+        <span class="icono">📋</span> Visitas
+      </div>
+      <div class="sidebar-item" data-pagina="pvp-producto" onclick="navegarA('pvp-producto')">
+        <span class="icono">🏷️</span> PVP - Producto
+      </div>
+      <div class="sidebar-item" data-pagina="pvp-centro" onclick="navegarA('pvp-centro')">
+        <span class="icono">🏪</span> PVP - Centro
+      </div>
+      <div class="sidebar-item" data-pagina="comparativa-pvp" onclick="navegarA('comparativa-pvp')">
+        <span class="icono">📊</span> Comparativa PVP
+      </div>
+      <div class="sidebar-item" data-pagina="analisis-lineal" onclick="navegarA('analisis-lineal')">
+        <span class="icono">📦</span> Análisis Lineal
+      </div>
+      <div class="sidebar-item" data-pagina="rotura-stock" onclick="navegarA('rotura-stock')">
+        <span class="icono">⚠️</span> Rotura Stock
+      </div>
+      <div class="sidebar-item" data-pagina="informe-comparativa" onclick="navegarA('informe-comparativa')">
+        <span class="icono">📄</span> Informe Comparativa
+      </div>
+      <div class="sidebar-item" data-pagina="pvp-cadenas" onclick="navegarA('pvp-cadenas')">
+        <span class="icono">🏬</span> PVP Medio x Cadenas
+      </div>
+      <div class="sidebar-item" data-pagina="pvp-semana" onclick="navegarA('pvp-semana')">
+        <span class="icono">📅</span> PVP Medio x Semana
+      </div>
+    </div>
+
+    <div class="sidebar-seccion">
+      <div class="sidebar-seccion-titulo">Ecommerce</div>
+      <div class="sidebar-item" data-pagina="ecom-comparativa" onclick="navegarA('ecom-comparativa')">
+        <span class="icono">🛒</span> Comparativa PVP
+      </div>
+      <div class="sidebar-item" data-pagina="ecom-informe" onclick="navegarA('ecom-informe')">
+        <span class="icono">📋</span> Informe Comparativa
+      </div>
+      <div class="sidebar-item" data-pagina="ecom-semana" onclick="navegarA('ecom-semana')">
+        <span class="icono">📅</span> PVP Semana
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="contenido-principal">
+    <div class="topbar">
+      <div class="topbar-titulo" id="topbar-titulo">Visitas</div>
+      <div class="topbar-controles">
+        <span id="banner-carga" style="display:none;font-size:0.75rem;padding:4px 10px;border-radius:4px;background:rgba(0,0,0,0.04)"></span>
+        <button class="btn btn-secundario" onclick="recargarDatos()" title="Recargar datos">↺ Actualizar</button>
+        <a href="../index.html" class="btn btn-secundario" style="text-decoration:none">← Portal</a>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: VISITAS -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina activa" id="pagina-visitas">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <select class="filtro-select" id="v-filtro-cadena" onchange="renderVisitas()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <select class="filtro-select" id="v-filtro-centro" onchange="renderVisitas()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="v-filtro-desde" onchange="renderVisitas()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="v-filtro-hasta" onchange="renderVisitas()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('visitas')">Restablecer</button>
+      </div>
+
+      <div class="grid-kpis" id="v-kpis">
+        <div class="kpi"><div class="kpi-valor" id="v-kpi-visitas">-</div><div class="kpi-etiqueta">Visitas</div></div>
+        <div class="kpi"><div class="kpi-valor" id="v-kpi-cadenas">-</div><div class="kpi-etiqueta">Cadenas</div></div>
+        <div class="kpi"><div class="kpi-valor" id="v-kpi-centros">-</div><div class="kpi-etiqueta">Centros</div></div>
+        <div class="kpi"><div class="kpi-valor" id="v-kpi-productos">-</div><div class="kpi-etiqueta">Productos</div></div>
+      </div>
+
+      <div class="grid-graficas col-2-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Ubicación de centros</div>
+          <div id="v-mapa-centros" style="height:260px;border-radius:6px;overflow:hidden"></div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Visitas por cadena</div>
+          <div class="grafica-contenedor"><canvas id="v-chart-cadenas-pie"></canvas></div>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Registro de visitas</div>
+        <div id="v-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: PVP - PRODUCTO -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-pvp-producto">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="pp-filtro-producto" onchange="renderPvpProducto()" style="min-width:260px">
+            <option value="">Selecciona un producto</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <select class="filtro-select" id="pp-filtro-centro" onchange="renderPvpProducto()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="pp-filtro-semana" onchange="renderPvpProducto()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="pp-filtro-desde" onchange="renderPvpProducto()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="pp-filtro-hasta" onchange="renderPvpProducto()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('pvp-producto')">Restablecer</button>
+      </div>
+      <div class="grid-graficas col-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Evolución PVP por centro</div>
+          <div class="grafica-contenedor" style="height:320px"><canvas id="pp-chart-evolucion"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle precios por centro y semana</div>
+        <div id="pp-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: PVP - CENTRO -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-pvp-centro">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <select class="filtro-select" id="pc-filtro-centro" onchange="renderPvpCentro()" style="min-width:220px">
+            <option value="">Selecciona un centro</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="pc-filtro-producto" onchange="renderPvpCentro()" style="min-width:220px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="pc-filtro-semana" onchange="renderPvpCentro()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('pvp-centro')">Restablecer</button>
+      </div>
+      <div class="grid-graficas col-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Evolución PVP por producto en el centro seleccionado</div>
+          <div class="grafica-contenedor" style="height:320px"><canvas id="pc-chart-evolucion"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle precios</div>
+        <div id="pc-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: COMPARATIVA PVP -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-comparativa-pvp">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="cp-filtro-producto" onchange="renderComparativaPvp()" style="min-width:260px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="cp-filtro-semana" onchange="renderComparativaPvp()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('comparativa-pvp')">Restablecer</button>
+      </div>
+      <div class="grid-graficas col-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Suma PVP por centro</div>
+          <div class="grafica-contenedor" style="height:360px"><canvas id="cp-chart-barras"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle comparativa</div>
+        <div id="cp-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: ANÁLISIS LINEAL -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-analisis-lineal">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="al-filtro-producto" onchange="renderAnalisisLineal()" style="min-width:260px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <select class="filtro-select" id="al-filtro-centro" onchange="renderAnalisisLineal()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <select class="filtro-select" id="al-filtro-cadena" onchange="renderAnalisisLineal()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="al-filtro-semana" onchange="renderAnalisisLineal()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('analisis-lineal')">Restablecer</button>
+      </div>
+      <div class="grid-kpis" id="al-kpis" style="margin-bottom:16px">
+        <div class="kpi"><div class="kpi-valor" id="al-kpi-registros">-</div><div class="kpi-etiqueta">Registros</div></div>
+        <div class="kpi"><div class="kpi-valor" id="al-kpi-rotura">-</div><div class="kpi-etiqueta">Con Rotura</div></div>
+        <div class="kpi"><div class="kpi-valor" id="al-kpi-rotura-pct">-</div><div class="kpi-etiqueta">% Rotura</div></div>
+      </div>
+      <div class="grid-graficas col-3" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Distribución Altura</div>
+          <div class="grafica-contenedor"><canvas id="al-chart-altura"></canvas></div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Distribución Facing</div>
+          <div class="grafica-contenedor"><canvas id="al-chart-facing"></canvas></div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Rotura Stock</div>
+          <div class="grafica-contenedor"><canvas id="al-chart-rotura"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle lineal</div>
+        <div id="al-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: ROTURA STOCK -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-rotura-stock">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="rs-filtro-producto" onchange="renderRoturaStock()" style="min-width:260px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <select class="filtro-select" id="rs-filtro-centro" onchange="renderRoturaStock()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <select class="filtro-select" id="rs-filtro-cadena" onchange="renderRoturaStock()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="rs-filtro-semana" onchange="renderRoturaStock()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('rotura-stock')">Restablecer</button>
+      </div>
+      <div class="grid-kpis" style="margin-bottom:16px">
+        <div class="kpi"><div class="kpi-valor" id="rs-kpi-roturas">-</div><div class="kpi-etiqueta">Visitas con Rotura</div></div>
+        <div class="kpi"><div class="kpi-valor" id="rs-kpi-centros">-</div><div class="kpi-etiqueta">Centros afectados</div></div>
+        <div class="kpi"><div class="kpi-valor" id="rs-kpi-productos">-</div><div class="kpi-etiqueta">Productos afectados</div></div>
+      </div>
+      <div class="grid-graficas col-2" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Rotura por cadena</div>
+          <div class="grafica-contenedor"><canvas id="rs-chart-cadenas"></canvas></div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Top productos con rotura</div>
+          <div class="grafica-contenedor"><canvas id="rs-chart-productos"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle roturas</div>
+        <div id="rs-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: INFORME COMPARATIVA -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-informe-comparativa">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <select class="filtro-select" id="ic-filtro-cadena" onchange="renderInformeComparativa()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Categoría</label>
+          <select class="filtro-select" id="ic-filtro-categoria" onchange="renderInformeComparativa()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="ic-filtro-semana" onchange="renderInformeComparativa()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('informe-comparativa')">Restablecer</button>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Tabla comparativa: Producto x Cadena (PVP medio)</div>
+        <div id="ic-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: PVP MEDIO x CADENAS -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-pvp-cadenas">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Categoría</label>
+          <select class="filtro-select" id="pmc-filtro-categoria" onchange="renderPvpCadenas()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="pmc-filtro-semana" onchange="renderPvpCadenas()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('pvp-cadenas')">Restablecer</button>
+      </div>
+      <div class="grid-graficas col-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">PVP medio por cadena y producto</div>
+          <div class="grafica-contenedor" style="height:400px"><canvas id="pmc-chart"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Tabla PVP medio: Producto x Cadena</div>
+        <div id="pmc-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: PVP MEDIO x SEMANA -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-pvp-semana">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="pms-filtro-producto" onchange="renderPvpSemana()" style="min-width:260px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <select class="filtro-select" id="pms-filtro-cadena" onchange="renderPvpSemana()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Categoría</label>
+          <select class="filtro-select" id="pms-filtro-categoria" onchange="renderPvpSemana()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('pvp-semana')">Restablecer</button>
+      </div>
+      <div class="grid-graficas col-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Evolución PVP medio por semana</div>
+          <div class="grafica-contenedor" style="height:320px"><canvas id="pms-chart"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Tabla PVP medio: Producto x Semana</div>
+        <div id="pms-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: ECOMMERCE - COMPARATIVA PVP -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-ecom-comparativa">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="ec-filtro-producto" onchange="renderEcomComparativa()" style="min-width:260px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="ec-filtro-semana" onchange="renderEcomComparativa()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Población</label>
+          <select class="filtro-select" id="ec-filtro-poblacion" onchange="renderEcomComparativa()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('ecom-comparativa')">Restablecer</button>
+      </div>
+      <div class="grid-graficas col-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Suma PVP por E-Commerce</div>
+          <div class="grafica-contenedor" style="height:320px"><canvas id="ec-chart-barras"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle precios ecommerce</div>
+        <div id="ec-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: ECOMMERCE - INFORME COMPARATIVA -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-ecom-informe">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="ei-filtro-producto" onchange="renderEcomInforme()" style="min-width:260px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">E-Commerce</label>
+          <select class="filtro-select" id="ei-filtro-ecom" onchange="renderEcomInforme()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <select class="filtro-select" id="ei-filtro-isla" onchange="renderEcomInforme()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="ei-filtro-semana" onchange="renderEcomInforme()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('ecom-informe')">Restablecer</button>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Tabla comparativa: Producto x E-Commerce (PVP medio)</div>
+        <div id="ei-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: ECOMMERCE - PVP SEMANA -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-ecom-semana">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="es-filtro-producto" onchange="renderEcomSemana()" style="min-width:260px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <select class="filtro-select" id="es-filtro-isla" onchange="renderEcomSemana()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Categoría</label>
+          <select class="filtro-select" id="es-filtro-categoria" onchange="renderEcomSemana()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('ecom-semana')">Restablecer</button>
+      </div>
+      <div class="grid-graficas col-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">PVP medio por semana y E-Commerce</div>
+          <div class="grafica-contenedor" style="height:320px"><canvas id="es-chart"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Tabla PVP: Producto x Semana</div>
+        <div id="es-tabla"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ================================================================
+// CONFIGURACIÓN FIREBASE
+// ================================================================
+firebase.initializeApp({
+  apiKey:    'AIzaSyAVgnw2V2Tc9f-IHuvoJKNGyroFIfg2XlY',
+  projectId: 'enlace-canarias'
+});
+const db = firebase.firestore();
+
+// ================================================================
+// DATOS GLOBALES
+// ================================================================
+let D = {
+  visitas: [],
+  productosPvp: [],
+  infoProductos: [],
+  centros: [],
+  ecommerce: []
+};
+
+let paginaActual = 'visitas';
+let datosInicializados = false;
+
+// Columnas conocidas (se auto-detectan desde los datos reales)
+const COL = {
+  // Copia Visitas (formato KoboToolbox — columnas reales del sheet)
+  V_FECHA:    ['Fecha Visita', 'FECHA VISITA', 'Fecha', 'fecha'],
+  V_NO:       ['form_id', 'No. Visita', 'NO. VISITA', 'FORM_ID', 'ID'],
+  V_GPV:      ['user', 'GPV', 'Nombre GPV', 'NOMBRE GPV'],
+  V_CENTRO:   ['Centro', 'CENTRO', 'Nombre Centro'],
+  V_CADENA:   ['Cadena', 'CADENA'],
+  V_OBS:      ['Observaciones', 'OBSERVACIONES', 'Obs'],
+  V_SEMANA:   ['Semana', 'SEMANA', 'Nº Semana'],
+  V_ISLA:     ['Isla', 'ISLA'],
+  V_DURACION: ['Duración Visita', 'Duracion Visita', 'DURACION'],
+
+  // Copia Productos (formato KoboToolbox — columnas reales del sheet)
+  P_FECHA:    ['Fecha Visita', 'FECHA VISITA', 'Fecha', 'fecha'],
+  P_SEMANA:   ['Semana', 'SEMANA', 'Nº Semana'],
+  P_CENTRO:   ['Centro', 'CENTRO', 'Nombre Centro'],
+  P_CADENA:   ['Cadena', 'CADENA'],
+  P_GPV:      ['user', 'GPV', 'Nombre GPV'],
+  P_PRODUCTO: ['Selección de Producto', 'Producto', 'PRODUCTO', 'Nombre Producto'],
+  P_PVP:      ['Precio PVP', 'PRECIO PVP', 'PVP', 'Precio'],
+  P_ALTURA:   ['Altura', 'ALTURA', 'Posición Lineal'],
+  P_FACING:   ['Facing', 'FACING', 'Nº Facing'],
+  P_ROTURA:   ['Rotura Stock', 'ROTURA STOCK', 'Rotura', 'ROTURA'],
+  P_PROMO:    ['Promoción', 'Promocion', 'PROMOCION', 'Promo'],
+  P_CADUCIDAD:['Fecha Caducidad', 'Caducidad', 'CADUCIDAD'],
+  P_INCIDENCIA:['Incidencia', 'INCIDENCIA'],
+  P_CATEGORIA:['Categoría', 'CATEGORÍA', 'Categoria', 'CATEGORIA'],
+
+  // Ecommerce
+  E_FECHA:    ['Fecha', 'FECHA', 'Fecha Visita'],
+  E_SEMANA:   ['Semana', 'SEMANA'],
+  E_MARCA:    ['Marca', 'MARCA'],
+  E_PRODUCTO: ['Producto', 'PRODUCTO'],
+  E_ECOM:     ['E-Commerce', 'E-COMMERCE', 'Ecommerce'],
+  E_POBLACION:['Población', 'POBLACION', 'Isla', 'ISLA'],
+  E_PVP:      ['PVP', 'Precio', 'PRECIO'],
+  E_CATEGORIA:['Categoría', 'CATEGORÍA', 'Categoria'],
+};
+
+function col(row, opciones) {
+  for (const k of opciones) {
+    if (row[k] !== undefined) return k;
+  }
+  return opciones[0];
+}
+
+function val(row, opciones) {
+  for (const k of opciones) {
+    if (row[k] !== undefined) return row[k];
+  }
+  return '';
+}
+
+function numVal(row, opciones) {
+  const v = val(row, opciones);
+  const n = parseFloat(String(v).replace(',', '.'));
+  return isNaN(n) ? 0 : n;
+}
+
+// ================================================================
+// CARGA DE DATOS DESDE FIREBASE FIRESTORE
+// ================================================================
+const _fbCache = {};
+
+async function leerColeccion(coleccion) {
+  if (_fbCache[coleccion]) return _fbCache[coleccion];
+  const snapshot = await db.collection(coleccion).get();
+  const docs = snapshot.docs.map(doc => doc.data());
+  _fbCache[coleccion] = docs;
+  return docs;
+}
+
+async function inicializar() {
+  try {
+    // ── FASE 1: visitas + centros → mostrar dashboard ya ────────────
+    mostrarCargandoGlobal();
+    const [visitas, centros] = await Promise.all([
+      leerColeccion('visitas_arias'),
+      leerColeccion('centros_arias'),
+    ]);
+    D.visitas      = visitas;
+    D.centros      = centros;
+    D.productosPvp = [];
+    D.ecommerce    = [];
+    datosInicializados = true;
+    ocultarCargandoGlobal();
+    renderPagina(paginaActual);
+
+    // ── FASE 2: ecommerce + primer lote de productos (2.000 docs) ───
+    const [ecommerce, snap2a] = await Promise.all([
+      leerColeccion('ecommerce_arias'),
+      db.collection('productos_arias').limit(2000).get()
+    ]);
+    D.ecommerce    = ecommerce;
+    D.productosPvp = snap2a.docs.map(d => d.data());
+    renderPagina(paginaActual);
+    actualizarBannerCarga(D.productosPvp.length, null);
+
+    // ── FASE 3: resto de productos en segundo plano ──────────────────
+    (async () => {
+      try {
+        let cursor = snap2a.docs[snap2a.docs.length - 1];
+        while (cursor) {
+          const chunk = await db.collection('productos_arias')
+            .startAfter(cursor)
+            .limit(5000)
+            .get();
+          if (chunk.empty) break;
+          D.productosPvp = [...D.productosPvp, ...chunk.docs.map(d => d.data())];
+          cursor = chunk.docs[chunk.docs.length - 1];
+        }
+        _fbCache['productos_arias'] = D.productosPvp;
+        renderPagina(paginaActual);
+        actualizarBannerCarga(D.productosPvp.length, D.productosPvp.length);
+      } catch (err) {
+        console.error('Error cargando historial de productos:', err);
+      }
+    })();
+
+  } catch (err) {
+    ocultarCargandoGlobal();
+    alert('Error al cargar datos desde Firebase: ' + err.message);
+  }
+}
+
+function actualizarBannerCarga(cargados, total) {
+  const banner = document.getElementById('banner-carga');
+  if (!banner) return;
+  if (total === null) {
+    banner.textContent = `⟳ ${cargados.toLocaleString('es-ES')} productos · cargando historial...`;
+    banner.style.color = 'var(--color-alerta)';
+    banner.style.display = 'inline';
+  } else {
+    banner.textContent = `✓ ${total.toLocaleString('es-ES')} productos cargados`;
+    banner.style.color = 'var(--color-exito)';
+    setTimeout(() => { banner.style.display = 'none'; }, 3000);
+  }
+}
+
+async function recargarDatos() {
+  Object.keys(_fbCache).forEach(k => delete _fbCache[k]);
+  datosInicializados = false;
+  D.visitas = [];
+  D.productosPvp = [];
+  D.ecommerce = [];
+  await inicializar();
+}
+
+function mostrarConfigPendiente() {
+  document.querySelectorAll('.pagina').forEach(p => {
+    p.innerHTML = `
+      <div class="tarjeta" style="max-width:600px;margin:40px auto;text-align:center;padding:40px">
+        <div style="font-size:3rem;margin-bottom:16px">⚙️</div>
+        <h2 style="margin-bottom:12px">Configuración pendiente</h2>
+        <p style="color:var(--color-texto-suave);margin-bottom:20px">
+          Necesitas desplegar el Apps Script y configurar la URL en este archivo.
+        </p>
+        <div class="tarjeta" style="text-align:left;background:var(--color-fondo)">
+          <h4>Pasos:</h4>
+          <ol style="padding-left:20px;margin-top:8px;color:var(--color-texto-suave);line-height:2">
+            <li>Abre <strong>dashboard-01/apps-script/Code.gs</strong></li>
+            <li>Crea un proyecto en <strong>script.google.com</strong></li>
+            <li>Pega el código y despliega como <strong>App web pública</strong></li>
+            <li>Copia la URL y reemplaza <code>PEGA_AQUI_TU_URL</code> en este archivo</li>
+          </ol>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function mostrarCargandoGlobal() {
+  document.querySelectorAll('.pagina.activa').forEach(p => {
+    if (!p.querySelector('.cargando-global')) {
+      const div = document.createElement('div');
+      div.className = 'cargando cargando-global';
+      div.innerHTML = '<div class="spinner"></div>Cargando datos desde Firebase...';
+      p.prepend(div);
+    }
+  });
+}
+
+function ocultarCargandoGlobal() {
+  document.querySelectorAll('.cargando-global').forEach(el => el.remove());
+}
+
+// ================================================================
+// NAVEGACIÓN
+// ================================================================
+const TITULOS = {
+  'visitas':            'Visitas',
+  'pvp-producto':       'PVP - Producto',
+  'pvp-centro':         'PVP - Centro',
+  'comparativa-pvp':    'Comparativa PVP',
+  'analisis-lineal':    'Análisis Lineal',
+  'rotura-stock':       'Rotura Stock',
+  'informe-comparativa':'Informe Comparativa',
+  'pvp-cadenas':        'PVP Medio x Cadenas',
+  'pvp-semana':         'PVP Medio x Semana',
+  'ecom-comparativa':   'Comparativa PVP Ecommerce',
+  'ecom-informe':       'Informe Comparativa Ecommerce',
+  'ecom-semana':        'PVP Semana Ecommerce',
+};
+
+function navegarA(id) {
+  document.querySelectorAll('.pagina').forEach(p => p.classList.remove('activa'));
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('activo'));
+
+  const pag = document.getElementById('pagina-' + id);
+  if (pag) pag.classList.add('activa');
+
+  const item = document.querySelector(`[data-pagina="${id}"]`);
+  if (item) item.classList.add('activo');
+
+  document.getElementById('topbar-titulo').textContent = TITULOS[id] || id;
+  paginaActual = id;
+
+  if (datosInicializados) renderPagina(id);
+
+  // El mapa Leaflet necesita recalcular tamaño al volver a la página
+  if (id === 'visitas' && _mapa) {
+    setTimeout(() => _mapa.invalidateSize(), 100);
+  }
+}
+
+function renderPagina(id) {
+  const fn = {
+    'visitas':            renderVisitas,
+    'pvp-producto':       renderPvpProducto,
+    'pvp-centro':         renderPvpCentro,
+    'comparativa-pvp':    renderComparativaPvp,
+    'analisis-lineal':    renderAnalisisLineal,
+    'rotura-stock':       renderRoturaStock,
+    'informe-comparativa':renderInformeComparativa,
+    'pvp-cadenas':        renderPvpCadenas,
+    'pvp-semana':         renderPvpSemana,
+    'ecom-comparativa':   renderEcomComparativa,
+    'ecom-informe':       renderEcomInforme,
+    'ecom-semana':        renderEcomSemana,
+  };
+  if (fn[id]) fn[id]();
+}
+
+function resetFiltros(pagina) {
+  const prefijos = {
+    'visitas':            'v',
+    'pvp-producto':       'pp',
+    'pvp-centro':         'pc',
+    'comparativa-pvp':    'cp',
+    'analisis-lineal':    'al',
+    'rotura-stock':       'rs',
+    'informe-comparativa':'ic',
+    'pvp-cadenas':        'pmc',
+    'pvp-semana':         'pms',
+    'ecom-comparativa':   'ec',
+    'ecom-informe':       'ei',
+    'ecom-semana':        'es',
+  };
+  const pref = prefijos[pagina];
+  document.querySelectorAll(`[id^="${pref}-filtro"]`).forEach(el => { el.value = ''; });
+  renderPagina(pagina);
+}
+
+// ================================================================
+// HELPERS PARA OBTENER FILTROS
+// ================================================================
+function getFiltro(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+// ================================================================
+// MAPA DE CENTROS (Leaflet)
+// ================================================================
+let _mapa = null;
+let _mapaMarkers = [];
+
+// Parsea coordenadas del campo combinado "LATITUD-LONGITUD" (formato "28.4707,-16.253")
+function parseCoordsFromCentro(centro) {
+  const raw = String(centro['LATITUD-LONGITUD'] ?? '').trim();
+  if (!raw) return null;
+  const parts = raw.split(',');
+  if (parts.length < 2) return null;
+  const lat = parseFloat(parts[0].trim());
+  const lon = parseFloat(parts[1].trim());
+  if (isNaN(lat) || isNaN(lon) || lat === 0 || lon === 0) return null;
+  return { lat, lon };
+}
+
+function renderMapaCentros(visitasFiltradas) {
+  const contenedor = document.getElementById('v-mapa-centros');
+  if (!contenedor) return;
+
+  // Contar visitas por centro para el popup
+  const visitasPorCentro = {};
+  visitasFiltradas.forEach(v => {
+    const c = val(v, COL.V_CENTRO);
+    if (c) visitasPorCentro[c] = (visitasPorCentro[c] || 0) + 1;
+  });
+
+  // Inicializar mapa una sola vez
+  if (!_mapa) {
+    _mapa = L.map('v-mapa-centros', { zoomControl: true }).setView([28.1, -15.4], 8);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+      maxZoom: 20,
+      subdomains: 'abcd'
+    }).addTo(_mapa);
+  }
+
+  // Limpiar marcadores anteriores
+  _mapaMarkers.forEach(m => _mapa.removeLayer(m));
+  _mapaMarkers = [];
+
+  // Añadir marcadores
+  const bounds = [];
+  D.centros.forEach(centro => {
+    const coords = parseCoordsFromCentro(centro);
+    if (!coords) return;
+    const { lat, lon } = coords;
+
+    const nombre = centro['NOMBRE CENTRO'] || centro['Centro'] || centro['CENTRO'] || '';
+    const cadena = centro['CADENA'] || centro['Cadena'] || '';
+    const color  = colorCadena(cadena);
+    const nVisitas = visitasPorCentro[nombre] || 0;
+
+    const icon = L.divIcon({
+      html: `<div style="
+        background:${color};
+        width:13px;height:13px;
+        border-radius:50%;
+        border:2px solid #fff;
+        box-shadow:0 1px 4px rgba(0,0,0,0.45);
+      "></div>`,
+      className: '',
+      iconSize: [13, 13],
+      iconAnchor: [6, 6],
+      popupAnchor: [0, -8]
+    });
+
+    const marker = L.marker([lat, lon], { icon })
+      .bindPopup(`
+        <div style="font-size:13px;line-height:1.6">
+          <strong>${nombre}</strong><br>
+          <span style="color:#555">${cadena}</span><br>
+          <span style="color:#2563d4">${nVisitas} visita${nVisitas !== 1 ? 's' : ''}</span>
+        </div>
+      `)
+      .addTo(_mapa);
+
+    _mapaMarkers.push(marker);
+    bounds.push([lat, lon]);
+  });
+
+  // Ajustar vista a los marcadores
+  if (bounds.length > 0) {
+    _mapa.fitBounds(bounds, { padding: [20, 20], maxZoom: 12 });
+  }
+
+  // Forzar reflow por si el mapa estaba en contenedor oculto
+  setTimeout(() => _mapa.invalidateSize(), 50);
+}
+
+// ================================================================
+// RENDER: VISITAS
+// ================================================================
+function renderVisitas() {
+  const filtCadena = getFiltro('v-filtro-cadena');
+  const filtCentro = getFiltro('v-filtro-centro');
+  const filtDesde  = getFiltro('v-filtro-desde');
+  const filtHasta  = getFiltro('v-filtro-hasta');
+
+  let datos = D.visitas;
+
+  // Poblar selectores la primera vez
+  rellenarSelect('v-filtro-cadena', datos, col(datos[0]||{}, COL.V_CADENA));
+  rellenarSelect('v-filtro-centro', datos, col(datos[0]||{}, COL.V_CENTRO));
+
+  // Filtrar
+  if (filtCadena) datos = datos.filter(r => val(r, COL.V_CADENA) === filtCadena);
+  if (filtCentro) datos = datos.filter(r => val(r, COL.V_CENTRO) === filtCentro);
+  if (filtDesde || filtHasta) datos = filtrarPorFecha(datos, col(datos[0]||{}, COL.V_FECHA), filtDesde, filtHasta);
+
+  // KPIs
+  const cadenas  = new Set(datos.map(r => val(r, COL.V_CADENA))).size;
+  const centros  = new Set(datos.map(r => val(r, COL.V_CENTRO))).size;
+  const productos = D.productosPvp.length > 0
+    ? new Set(D.productosPvp.map(r => val(r, COL.P_PRODUCTO))).size
+    : '-';
+
+  document.getElementById('v-kpi-visitas').textContent  = formatearNumero(datos.length);
+  document.getElementById('v-kpi-cadenas').textContent  = cadenas;
+  document.getElementById('v-kpi-centros').textContent  = centros;
+  document.getElementById('v-kpi-productos').textContent = productos;
+
+  // Mapa de centros
+  renderMapaCentros(datos);
+
+  // Gráfica pie por cadena
+  const porCadena = agruparPor(datos, col(datos[0]||{}, COL.V_CADENA));
+  const cadenasKeys = Object.keys(porCadena).sort((a,b) => porCadena[b].length - porCadena[a].length);
+
+  // Gráfica pie por cadena
+  crearGrafica('v-chart-cadenas-pie', 'doughnut', {
+    labels: cadenasKeys,
+    datasets: [{
+      data: cadenasKeys.map(k => porCadena[k].length),
+      backgroundColor: cadenasKeys.map(k => colorCadena(k) + 'cc'),
+      borderColor: 'transparent',
+    }]
+  }, { scales: { x: { display: false }, y: { display: false } } });
+
+  // Tabla
+  const colFecha  = col(datos[0]||{}, COL.V_FECHA);
+  const colNo     = col(datos[0]||{}, COL.V_NO);
+  const colGpv    = col(datos[0]||{}, COL.V_GPV);
+  const colCentro = col(datos[0]||{}, COL.V_CENTRO);
+  const colObs    = col(datos[0]||{}, COL.V_OBS);
+
+  datos = datos.slice().sort((a, b) => new Date(b[colFecha]) - new Date(a[colFecha]));
+
+  renderizarTabla('v-tabla', [
+    { key: colFecha,  label: 'Fecha Visita',  formato: v => formatearFecha(v) },
+    { key: colNo,     label: 'No. Visita' },
+    { key: colGpv,    label: 'GPV' },
+    { key: colCentro, label: 'Centro' },
+    { key: colObs,    label: 'Observaciones', formato: v => v || '-' },
+  ], datos);
+}
+
+// ================================================================
+// RENDER: PVP - PRODUCTO
+// ================================================================
+function renderPvpProducto() {
+  const filtProducto = getFiltro('pp-filtro-producto');
+  const filtCentro   = getFiltro('pp-filtro-centro');
+  const filtSemana   = getFiltro('pp-filtro-semana');
+  const filtDesde    = getFiltro('pp-filtro-desde');
+  const filtHasta    = getFiltro('pp-filtro-hasta');
+
+  const todos = D.productosPvp;
+  rellenarSelect('pp-filtro-producto', todos, col(todos[0]||{}, COL.P_PRODUCTO), 'Selecciona producto');
+  rellenarSelect('pp-filtro-centro',   todos, col(todos[0]||{}, COL.P_CENTRO));
+  rellenarSelect('pp-filtro-semana',   todos, col(todos[0]||{}, COL.P_SEMANA));
+
+  let datos = todos;
+  if (filtProducto) datos = datos.filter(r => val(r, COL.P_PRODUCTO) === filtProducto);
+  if (filtCentro)   datos = datos.filter(r => val(r, COL.P_CENTRO) === filtCentro);
+  if (filtSemana)   datos = datos.filter(r => String(val(r, COL.P_SEMANA)) === filtSemana);
+  if (filtDesde || filtHasta) datos = filtrarPorFecha(datos, col(datos[0]||{}, COL.P_FECHA), filtDesde, filtHasta);
+
+  // Agrupar por centro y semana para el gráfico
+  const centros = [...new Set(datos.map(r => val(r, COL.P_CENTRO)))].filter(Boolean).sort();
+  const semanas = [...new Set(datos.map(r => val(r, COL.P_SEMANA)))].filter(Boolean).sort((a,b) => Number(a)-Number(b));
+
+  const datasets = centros.slice(0, 10).map((centro, i) => {
+    const filasCentro = datos.filter(r => val(r, COL.P_CENTRO) === centro);
+    return {
+      label: centro,
+      data: semanas.map(s => {
+        const f = filasCentro.filter(r => String(val(r, COL.P_SEMANA)) === String(s));
+        return f.length > 0 ? mediaColumna(f, col(f[0], COL.P_PVP)) : null;
+      }),
+      borderColor: PALETA[i % PALETA.length],
+      backgroundColor: PALETA[i % PALETA.length] + '33',
+      tension: 0.3,
+      pointRadius: 4,
+      spanGaps: true,
+    };
+  });
+
+  crearGrafica('pp-chart-evolucion', 'line', {
+    labels: semanas.map(s => 'Sem. ' + s),
+    datasets
+  }, {
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: {
+        title: { display: true, text: 'Semana', color: '#5b6080', font: { size: 12 } }
+      },
+      y: {
+        title: { display: true, text: 'Precio (€)', color: '#5b6080', font: { size: 12 } },
+        ticks: { callback: v => v.toFixed(2) + ' €' },
+        beginAtZero: false
+      }
+    }
+  });
+
+  const colFecha    = col(datos[0]||{}, COL.P_FECHA);
+  const colSemana   = col(datos[0]||{}, COL.P_SEMANA);
+  const colCentro   = col(datos[0]||{}, COL.P_CENTRO);
+  const colCadena   = col(datos[0]||{}, COL.P_CADENA);
+  const colProducto = col(datos[0]||{}, COL.P_PRODUCTO);
+  const colPvp      = col(datos[0]||{}, COL.P_PVP);
+
+  // Ordenar de más reciente a más antiguo
+  datos = datos.slice().sort((a, b) => new Date(b[colFecha]) - new Date(a[colFecha]));
+
+  renderizarTabla('pp-tabla', [
+    { key: colFecha,    label: 'Fecha',    formato: v => formatearFecha(v) },
+    { key: colSemana,   label: 'Semana',   formato: v => 'Sem. ' + v },
+    { key: colCentro,   label: 'Centro' },
+    { key: colCadena,   label: 'Cadena',   formato: v => badgeCadena(v) },
+    { key: colProducto, label: 'Producto' },
+    { key: colPvp,      label: 'PVP',      formato: v => formatearPrecio(v) },
+  ], datos);
+}
+
+// ================================================================
+// RENDER: PVP - CENTRO
+// ================================================================
+function renderPvpCentro() {
+  const filtCentro   = getFiltro('pc-filtro-centro');
+  const filtProducto = getFiltro('pc-filtro-producto');
+  const filtSemana   = getFiltro('pc-filtro-semana');
+
+  const todos = D.productosPvp;
+  rellenarSelect('pc-filtro-centro',   todos, col(todos[0]||{}, COL.P_CENTRO), 'Selecciona centro');
+  rellenarSelect('pc-filtro-producto', todos, col(todos[0]||{}, COL.P_PRODUCTO));
+  rellenarSelect('pc-filtro-semana',   todos, col(todos[0]||{}, COL.P_SEMANA));
+
+  let datos = todos;
+  if (filtCentro)   datos = datos.filter(r => val(r, COL.P_CENTRO) === filtCentro);
+  if (filtProducto) datos = datos.filter(r => val(r, COL.P_PRODUCTO) === filtProducto);
+  if (filtSemana)   datos = datos.filter(r => String(val(r, COL.P_SEMANA)) === filtSemana);
+
+  const productos = [...new Set(datos.map(r => val(r, COL.P_PRODUCTO)))].filter(Boolean).sort();
+  const semanas   = [...new Set(datos.map(r => val(r, COL.P_SEMANA)))].filter(Boolean).sort((a,b) => Number(a)-Number(b));
+
+  const datasets = productos.slice(0, 10).map((prod, i) => {
+    const filasProd = datos.filter(r => val(r, COL.P_PRODUCTO) === prod);
+    return {
+      label: prod.substring(0, 30),
+      data: semanas.map(s => {
+        const f = filasProd.filter(r => String(val(r, COL.P_SEMANA)) === String(s));
+        return f.length > 0 ? mediaColumna(f, col(f[0], COL.P_PVP)) : null;
+      }),
+      borderColor: PALETA[i % PALETA.length],
+      backgroundColor: PALETA[i % PALETA.length] + '33',
+      tension: 0.3,
+      pointRadius: 4,
+      spanGaps: true,
+    };
+  });
+
+  crearGrafica('pc-chart-evolucion', 'line', {
+    labels: semanas.map(s => 'Sem. ' + s),
+    datasets
+  }, {
+    plugins: { legend: { position: 'top' } },
+    scales: { y: { ticks: { callback: v => v + ' €' } } }
+  });
+
+  const colFecha    = col(datos[0]||{}, COL.P_FECHA);
+  const colSemana   = col(datos[0]||{}, COL.P_SEMANA);
+  const colCentro   = col(datos[0]||{}, COL.P_CENTRO);
+  const colProducto = col(datos[0]||{}, COL.P_PRODUCTO);
+  const colPvp      = col(datos[0]||{}, COL.P_PVP);
+
+  renderizarTabla('pc-tabla', [
+    { key: colFecha,    label: 'Fecha',    formato: v => formatearFecha(v) },
+    { key: colSemana,   label: 'Semana',   formato: v => 'Sem. ' + v },
+    { key: colCentro,   label: 'Centro' },
+    { key: colProducto, label: 'Producto' },
+    { key: colPvp,      label: 'PVP',      formato: v => formatearPrecio(v) },
+  ], datos);
+}
+
+// ================================================================
+// RENDER: COMPARATIVA PVP
+// ================================================================
+function renderComparativaPvp() {
+  const filtProducto = getFiltro('cp-filtro-producto');
+  const filtSemana   = getFiltro('cp-filtro-semana');
+
+  const todos = D.productosPvp;
+  rellenarSelect('cp-filtro-producto', todos, col(todos[0]||{}, COL.P_PRODUCTO));
+  rellenarSelect('cp-filtro-semana',   todos, col(todos[0]||{}, COL.P_SEMANA));
+
+  let datos = todos;
+  if (filtProducto) datos = datos.filter(r => val(r, COL.P_PRODUCTO) === filtProducto);
+  if (filtSemana)   datos = datos.filter(r => String(val(r, COL.P_SEMANA)) === filtSemana);
+
+  const porCentro = agruparPor(datos, col(datos[0]||{}, COL.P_CENTRO));
+  const centros = Object.keys(porCentro).sort((a,b) => sumarColumna(porCentro[b], col(porCentro[b][0], COL.P_PVP)) - sumarColumna(porCentro[a], col(porCentro[a][0], COL.P_PVP)));
+
+  crearGrafica('cp-chart-barras', 'bar', {
+    labels: centros,
+    datasets: [{
+      label: 'Suma PVP',
+      data: centros.map(c => sumarColumna(porCentro[c], col(porCentro[c][0], COL.P_PVP))),
+      backgroundColor: centros.map(c => colorCadena(c) + 'cc'),
+      borderColor:     centros.map(c => colorCadena(c)),
+      borderWidth: 1, borderRadius: 4,
+    }]
+  }, {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { callback: v => v + ' €' } },
+      y: { ticks: { font: { size: 10 } } }
+    }
+  });
+
+  const colCentro   = col(datos[0]||{}, COL.P_CENTRO);
+  const colCadena   = col(datos[0]||{}, COL.P_CADENA);
+  const colProducto = col(datos[0]||{}, COL.P_PRODUCTO);
+  const colSemana   = col(datos[0]||{}, COL.P_SEMANA);
+  const colPvp      = col(datos[0]||{}, COL.P_PVP);
+
+  renderizarTabla('cp-tabla', [
+    { key: colCentro,   label: 'Centro' },
+    { key: colCadena,   label: 'Cadena',   formato: v => badgeCadena(v) },
+    { key: colProducto, label: 'Producto' },
+    { key: colSemana,   label: 'Semana',   formato: v => 'Sem. ' + v },
+    { key: colPvp,      label: 'PVP',      formato: v => formatearPrecio(v) },
+  ], datos);
+}
+
+// ================================================================
+// RENDER: ANÁLISIS LINEAL
+// ================================================================
+function renderAnalisisLineal() {
+  const filtProducto = getFiltro('al-filtro-producto');
+  const filtCentro   = getFiltro('al-filtro-centro');
+  const filtCadena   = getFiltro('al-filtro-cadena');
+  const filtSemana   = getFiltro('al-filtro-semana');
+
+  const todos = D.productosPvp;
+  rellenarSelect('al-filtro-producto', todos, col(todos[0]||{}, COL.P_PRODUCTO));
+  rellenarSelect('al-filtro-centro',   todos, col(todos[0]||{}, COL.P_CENTRO));
+  rellenarSelect('al-filtro-cadena',   todos, col(todos[0]||{}, COL.P_CADENA));
+  rellenarSelect('al-filtro-semana',   todos, col(todos[0]||{}, COL.P_SEMANA));
+
+  let datos = todos;
+  if (filtProducto) datos = datos.filter(r => val(r, COL.P_PRODUCTO) === filtProducto);
+  if (filtCentro)   datos = datos.filter(r => val(r, COL.P_CENTRO) === filtCentro);
+  if (filtCadena)   datos = datos.filter(r => val(r, COL.P_CADENA) === filtCadena);
+  if (filtSemana)   datos = datos.filter(r => String(val(r, COL.P_SEMANA)) === filtSemana);
+
+  const conRotura = datos.filter(r => {
+    const v = String(val(r, COL.P_ROTURA)).toUpperCase();
+    return v === 'SI' || v === 'SÍ' || v === 'TRUE' || v === '1';
+  });
+
+  document.getElementById('al-kpi-registros').textContent = formatearNumero(datos.length);
+  document.getElementById('al-kpi-rotura').textContent    = formatearNumero(conRotura.length);
+  document.getElementById('al-kpi-rotura-pct').textContent = datos.length > 0
+    ? formatearPorcentaje(conRotura.length / datos.length * 100) : '-';
+
+  const porAltura = agruparPor(datos, col(datos[0]||{}, COL.P_ALTURA));
+  const alturas = Object.keys(porAltura).filter(Boolean);
+  crearGrafica('al-chart-altura', 'doughnut', {
+    labels: alturas,
+    datasets: [{ data: alturas.map(k => porAltura[k].length), backgroundColor: PALETA, borderColor: 'transparent' }]
+  }, { scales: { x: { display: false }, y: { display: false } } });
+
+  const porFacing = agruparPor(datos, col(datos[0]||{}, COL.P_FACING));
+  const facings = Object.keys(porFacing).filter(Boolean).sort((a,b) => Number(a)-Number(b));
+  crearGrafica('al-chart-facing', 'bar', {
+    labels: facings,
+    datasets: [{
+      label: 'Registros',
+      data: facings.map(k => porFacing[k].length),
+      backgroundColor: PALETA[0] + 'cc', borderColor: PALETA[0], borderWidth:1, borderRadius:3,
+    }]
+  }, { plugins: { legend: { display: false } } });
+
+  crearGrafica('al-chart-rotura', 'doughnut', {
+    labels: ['Sin rotura', 'Con rotura'],
+    datasets: [{
+      data: [datos.length - conRotura.length, conRotura.length],
+      backgroundColor: ['rgba(46,207,138,0.8)', 'rgba(247,95,95,0.8)'],
+      borderColor: 'transparent',
+    }]
+  }, { scales: { x: { display: false }, y: { display: false } } });
+
+  const colCentro   = col(datos[0]||{}, COL.P_CENTRO);
+  const colCadena   = col(datos[0]||{}, COL.P_CADENA);
+  const colProducto = col(datos[0]||{}, COL.P_PRODUCTO);
+  const colSemana   = col(datos[0]||{}, COL.P_SEMANA);
+  const colAltura   = col(datos[0]||{}, COL.P_ALTURA);
+  const colFacing   = col(datos[0]||{}, COL.P_FACING);
+  const colRotura   = col(datos[0]||{}, COL.P_ROTURA);
+
+  renderizarTabla('al-tabla', [
+    { key: colSemana,   label: 'Semana',  formato: v => 'Sem. ' + v },
+    { key: colCentro,   label: 'Centro' },
+    { key: colCadena,   label: 'Cadena',  formato: v => badgeCadena(v) },
+    { key: colProducto, label: 'Producto' },
+    { key: colAltura,   label: 'Altura' },
+    { key: colFacing,   label: 'Facing' },
+    { key: colRotura,   label: 'Rotura',  formato: v => badgeRotura(v) },
+  ], datos);
+}
+
+// ================================================================
+// RENDER: ROTURA STOCK
+// ================================================================
+function renderRoturaStock() {
+  const filtProducto = getFiltro('rs-filtro-producto');
+  const filtCentro   = getFiltro('rs-filtro-centro');
+  const filtCadena   = getFiltro('rs-filtro-cadena');
+  const filtSemana   = getFiltro('rs-filtro-semana');
+
+  const todos = D.productosPvp;
+  rellenarSelect('rs-filtro-producto', todos, col(todos[0]||{}, COL.P_PRODUCTO));
+  rellenarSelect('rs-filtro-centro',   todos, col(todos[0]||{}, COL.P_CENTRO));
+  rellenarSelect('rs-filtro-cadena',   todos, col(todos[0]||{}, COL.P_CADENA));
+  rellenarSelect('rs-filtro-semana',   todos, col(todos[0]||{}, COL.P_SEMANA));
+
+  let datos = todos.filter(r => {
+    const v = String(val(r, COL.P_ROTURA)).toUpperCase();
+    return v === 'SI' || v === 'SÍ' || v === 'TRUE' || v === '1';
+  });
+
+  if (filtProducto) datos = datos.filter(r => val(r, COL.P_PRODUCTO) === filtProducto);
+  if (filtCentro)   datos = datos.filter(r => val(r, COL.P_CENTRO) === filtCentro);
+  if (filtCadena)   datos = datos.filter(r => val(r, COL.P_CADENA) === filtCadena);
+  if (filtSemana)   datos = datos.filter(r => String(val(r, COL.P_SEMANA)) === filtSemana);
+
+  document.getElementById('rs-kpi-roturas').textContent  = formatearNumero(datos.length);
+  document.getElementById('rs-kpi-centros').textContent  = new Set(datos.map(r => val(r, COL.P_CENTRO))).size;
+  document.getElementById('rs-kpi-productos').textContent= new Set(datos.map(r => val(r, COL.P_PRODUCTO))).size;
+
+  const porCadena = agruparPor(datos, col(datos[0]||{}, COL.P_CADENA));
+  const cadenas   = Object.keys(porCadena).filter(Boolean);
+  crearGrafica('rs-chart-cadenas', 'doughnut', {
+    labels: cadenas,
+    datasets: [{ data: cadenas.map(k => porCadena[k].length), backgroundColor: cadenas.map(k => colorCadena(k) + 'cc'), borderColor: 'transparent' }]
+  }, { scales: { x: { display: false }, y: { display: false } } });
+
+  const porProducto = agruparPor(datos, col(datos[0]||{}, COL.P_PRODUCTO));
+  const topProds = Object.keys(porProducto).sort((a,b) => porProducto[b].length - porProducto[a].length).slice(0, 10);
+  crearGrafica('rs-chart-productos', 'bar', {
+    labels: topProds.map(p => p.substring(0,25)),
+    datasets: [{
+      label: 'Roturas',
+      data: topProds.map(p => porProducto[p].length),
+      backgroundColor: '#f75f5fcc', borderColor: '#f75f5f', borderWidth:1, borderRadius:3,
+    }]
+  }, {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: { y: { ticks: { font: { size: 10 } } } }
+  });
+
+  const colFecha    = col(datos[0]||{}, COL.P_FECHA);
+  const colSemana   = col(datos[0]||{}, COL.P_SEMANA);
+  const colCentro   = col(datos[0]||{}, COL.P_CENTRO);
+  const colCadena   = col(datos[0]||{}, COL.P_CADENA);
+  const colProducto = col(datos[0]||{}, COL.P_PRODUCTO);
+
+  renderizarTabla('rs-tabla', [
+    { key: colFecha,    label: 'Fecha',   formato: v => formatearFecha(v) },
+    { key: colSemana,   label: 'Semana',  formato: v => 'Sem. ' + v },
+    { key: colCentro,   label: 'Centro' },
+    { key: colCadena,   label: 'Cadena',  formato: v => badgeCadena(v) },
+    { key: colProducto, label: 'Producto' },
+  ], datos);
+}
+
+// ================================================================
+// RENDER: INFORME COMPARATIVA (tabla pivote Producto x Cadena)
+// ================================================================
+function renderInformeComparativa() {
+  const filtCadena   = getFiltro('ic-filtro-cadena');
+  const filtCategoria= getFiltro('ic-filtro-categoria');
+  const filtSemana   = getFiltro('ic-filtro-semana');
+
+  const todos = D.productosPvp;
+  rellenarSelect('ic-filtro-cadena',    todos, col(todos[0]||{}, COL.P_CADENA));
+  rellenarSelect('ic-filtro-categoria', todos, col(todos[0]||{}, COL.P_CATEGORIA));
+  rellenarSelect('ic-filtro-semana',    todos, col(todos[0]||{}, COL.P_SEMANA));
+
+  let datos = todos;
+  if (filtCadena)    datos = datos.filter(r => val(r, COL.P_CADENA) === filtCadena);
+  if (filtCategoria) datos = datos.filter(r => val(r, COL.P_CATEGORIA) === filtCategoria);
+  if (filtSemana)    datos = datos.filter(r => String(val(r, COL.P_SEMANA)) === filtSemana);
+
+  renderTablaComparativa('ic-tabla', datos, COL.P_PRODUCTO, COL.P_CADENA, COL.P_PVP);
+}
+
+// ================================================================
+// RENDER: PVP MEDIO x CADENAS
+// ================================================================
+function renderPvpCadenas() {
+  const filtCategoria = getFiltro('pmc-filtro-categoria');
+  const filtSemana    = getFiltro('pmc-filtro-semana');
+
+  const todos = D.productosPvp;
+  rellenarSelect('pmc-filtro-categoria', todos, col(todos[0]||{}, COL.P_CATEGORIA));
+  rellenarSelect('pmc-filtro-semana',    todos, col(todos[0]||{}, COL.P_SEMANA));
+
+  let datos = todos;
+  if (filtCategoria) datos = datos.filter(r => val(r, COL.P_CATEGORIA) === filtCategoria);
+  if (filtSemana)    datos = datos.filter(r => String(val(r, COL.P_SEMANA)) === filtSemana);
+
+  const cadenas   = [...new Set(datos.map(r => val(r, COL.P_CADENA)))].filter(Boolean).sort();
+  const productos = [...new Set(datos.map(r => val(r, COL.P_PRODUCTO)))].filter(Boolean).sort().slice(0, 15);
+
+  const datasets = cadenas.map((cadena, i) => ({
+    label: cadena,
+    data: productos.map(prod => {
+      const filas = datos.filter(r => val(r, COL.P_CADENA) === cadena && val(r, COL.P_PRODUCTO) === prod);
+      return filas.length > 0 ? mediaColumna(filas, col(filas[0], COL.P_PVP)) : null;
+    }),
+    backgroundColor: colorCadena(cadena) + '99',
+    borderColor: colorCadena(cadena),
+    borderWidth: 1, borderRadius: 3,
+  }));
+
+  crearGrafica('pmc-chart', 'bar', {
+    labels: productos.map(p => p.substring(0,20)),
+    datasets
+  }, {
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { ticks: { callback: v => v + ' €' } },
+      x: { ticks: { font: { size: 9 } } }
+    }
+  });
+
+  renderTablaComparativa('pmc-tabla', datos, COL.P_PRODUCTO, COL.P_CADENA, COL.P_PVP);
+}
+
+// ================================================================
+// RENDER: PVP MEDIO x SEMANA
+// ================================================================
+function renderPvpSemana() {
+  const filtProducto  = getFiltro('pms-filtro-producto');
+  const filtCadena    = getFiltro('pms-filtro-cadena');
+  const filtCategoria = getFiltro('pms-filtro-categoria');
+
+  const todos = D.productosPvp;
+  rellenarSelect('pms-filtro-producto',  todos, col(todos[0]||{}, COL.P_PRODUCTO));
+  rellenarSelect('pms-filtro-cadena',    todos, col(todos[0]||{}, COL.P_CADENA));
+  rellenarSelect('pms-filtro-categoria', todos, col(todos[0]||{}, COL.P_CATEGORIA));
+
+  let datos = todos;
+  if (filtProducto)  datos = datos.filter(r => val(r, COL.P_PRODUCTO) === filtProducto);
+  if (filtCadena)    datos = datos.filter(r => val(r, COL.P_CADENA) === filtCadena);
+  if (filtCategoria) datos = datos.filter(r => val(r, COL.P_CATEGORIA) === filtCategoria);
+
+  const semanas = [...new Set(datos.map(r => val(r, COL.P_SEMANA)))].filter(Boolean).sort((a,b) => Number(a)-Number(b));
+  const cadenas = [...new Set(datos.map(r => val(r, COL.P_CADENA)))].filter(Boolean).sort();
+
+  const datasets = cadenas.map((cadena, i) => ({
+    label: cadena,
+    data: semanas.map(s => {
+      const f = datos.filter(r => val(r, COL.P_CADENA) === cadena && String(val(r, COL.P_SEMANA)) === String(s));
+      return f.length > 0 ? mediaColumna(f, col(f[0], COL.P_PVP)) : null;
+    }),
+    borderColor: colorCadena(cadena),
+    backgroundColor: colorCadena(cadena) + '33',
+    tension: 0.3, pointRadius: 4, spanGaps: true,
+  }));
+
+  crearGrafica('pms-chart', 'line', {
+    labels: semanas.map(s => 'Sem. ' + s),
+    datasets
+  }, {
+    plugins: { legend: { position: 'top' } },
+    scales: { y: { ticks: { callback: v => v + ' €' } } }
+  });
+
+  renderTablaComparativa('pms-tabla', datos, COL.P_PRODUCTO, COL.P_SEMANA, COL.P_PVP);
+}
+
+// ================================================================
+// RENDER: ECOMMERCE - COMPARATIVA PVP
+// ================================================================
+function renderEcomComparativa() {
+  const filtProducto  = getFiltro('ec-filtro-producto');
+  const filtSemana    = getFiltro('ec-filtro-semana');
+  const filtPoblacion = getFiltro('ec-filtro-poblacion');
+
+  const todos = D.ecommerce;
+  rellenarSelect('ec-filtro-producto',  todos, col(todos[0]||{}, COL.E_PRODUCTO));
+  rellenarSelect('ec-filtro-semana',    todos, col(todos[0]||{}, COL.E_SEMANA));
+  rellenarSelect('ec-filtro-poblacion', todos, col(todos[0]||{}, COL.E_POBLACION));
+
+  let datos = todos;
+  if (filtProducto)  datos = datos.filter(r => val(r, COL.E_PRODUCTO) === filtProducto);
+  if (filtSemana)    datos = datos.filter(r => String(val(r, COL.E_SEMANA)) === filtSemana);
+  if (filtPoblacion) datos = datos.filter(r => val(r, COL.E_POBLACION) === filtPoblacion);
+
+  const porEcom = agruparPor(datos, col(datos[0]||{}, COL.E_ECOM));
+  const ecomKeys = Object.keys(porEcom).filter(Boolean).sort((a,b) => sumarColumna(porEcom[b], col(porEcom[b][0], COL.E_PVP)) - sumarColumna(porEcom[a], col(porEcom[a][0], COL.E_PVP)));
+
+  crearGrafica('ec-chart-barras', 'bar', {
+    labels: ecomKeys,
+    datasets: [{
+      label: 'Suma PVP',
+      data: ecomKeys.map(k => sumarColumna(porEcom[k], col(porEcom[k][0], COL.E_PVP))),
+      backgroundColor: PALETA.map(c => c + 'cc').slice(0, ecomKeys.length),
+      borderColor: PALETA.slice(0, ecomKeys.length),
+      borderWidth: 1, borderRadius: 4,
+    }]
+  }, {
+    plugins: { legend: { display: false } },
+    scales: { y: { ticks: { callback: v => v + ' €' } } }
+  });
+
+  const colFecha    = col(datos[0]||{}, COL.E_FECHA);
+  const colSemana   = col(datos[0]||{}, COL.E_SEMANA);
+  const colProducto = col(datos[0]||{}, COL.E_PRODUCTO);
+  const colEcom     = col(datos[0]||{}, COL.E_ECOM);
+  const colPoblacion= col(datos[0]||{}, COL.E_POBLACION);
+  const colPvp      = col(datos[0]||{}, COL.E_PVP);
+
+  renderizarTabla('ec-tabla', [
+    { key: colFecha,    label: 'Fecha',       formato: v => formatearFecha(v) },
+    { key: colSemana,   label: 'Semana',       formato: v => 'Sem. ' + v },
+    { key: colProducto, label: 'Producto' },
+    { key: colEcom,     label: 'E-Commerce' },
+    { key: colPoblacion,label: 'Población' },
+    { key: colPvp,      label: 'PVP',          formato: v => formatearPrecio(v) },
+  ], datos);
+}
+
+// ================================================================
+// RENDER: ECOMMERCE - INFORME COMPARATIVA
+// ================================================================
+function renderEcomInforme() {
+  const filtProducto = getFiltro('ei-filtro-producto');
+  const filtEcom     = getFiltro('ei-filtro-ecom');
+  const filtIsla     = getFiltro('ei-filtro-isla');
+  const filtSemana   = getFiltro('ei-filtro-semana');
+
+  const todos = D.ecommerce;
+  rellenarSelect('ei-filtro-producto', todos, col(todos[0]||{}, COL.E_PRODUCTO));
+  rellenarSelect('ei-filtro-ecom',     todos, col(todos[0]||{}, COL.E_ECOM));
+  rellenarSelect('ei-filtro-isla',     todos, col(todos[0]||{}, COL.E_POBLACION));
+  rellenarSelect('ei-filtro-semana',   todos, col(todos[0]||{}, COL.E_SEMANA));
+
+  let datos = todos;
+  if (filtProducto) datos = datos.filter(r => val(r, COL.E_PRODUCTO) === filtProducto);
+  if (filtEcom)     datos = datos.filter(r => val(r, COL.E_ECOM) === filtEcom);
+  if (filtIsla)     datos = datos.filter(r => val(r, COL.E_POBLACION) === filtIsla);
+  if (filtSemana)   datos = datos.filter(r => String(val(r, COL.E_SEMANA)) === filtSemana);
+
+  renderTablaComparativa('ei-tabla', datos, COL.E_PRODUCTO, COL.E_ECOM, COL.E_PVP);
+}
+
+// ================================================================
+// RENDER: ECOMMERCE - PVP SEMANA
+// ================================================================
+function renderEcomSemana() {
+  const filtProducto  = getFiltro('es-filtro-producto');
+  const filtIsla      = getFiltro('es-filtro-isla');
+  const filtCategoria = getFiltro('es-filtro-categoria');
+
+  const todos = D.ecommerce;
+  rellenarSelect('es-filtro-producto',  todos, col(todos[0]||{}, COL.E_PRODUCTO));
+  rellenarSelect('es-filtro-isla',      todos, col(todos[0]||{}, COL.E_POBLACION));
+  rellenarSelect('es-filtro-categoria', todos, col(todos[0]||{}, COL.E_CATEGORIA));
+
+  let datos = todos;
+  if (filtProducto)  datos = datos.filter(r => val(r, COL.E_PRODUCTO) === filtProducto);
+  if (filtIsla)      datos = datos.filter(r => val(r, COL.E_POBLACION) === filtIsla);
+  if (filtCategoria) datos = datos.filter(r => val(r, COL.E_CATEGORIA) === filtCategoria);
+
+  const semanas = [...new Set(datos.map(r => val(r, COL.E_SEMANA)))].filter(Boolean).sort((a,b) => Number(a)-Number(b));
+  const ecomKeys = [...new Set(datos.map(r => val(r, COL.E_ECOM)))].filter(Boolean).sort();
+
+  const datasets = ecomKeys.map((ecom, i) => ({
+    label: ecom,
+    data: semanas.map(s => {
+      const f = datos.filter(r => val(r, COL.E_ECOM) === ecom && String(val(r, COL.E_SEMANA)) === String(s));
+      return f.length > 0 ? mediaColumna(f, col(f[0], COL.E_PVP)) : null;
+    }),
+    borderColor: PALETA[i % PALETA.length],
+    backgroundColor: PALETA[i % PALETA.length] + '33',
+    tension: 0.3, pointRadius: 4, spanGaps: true,
+  }));
+
+  crearGrafica('es-chart', 'line', {
+    labels: semanas.map(s => 'Sem. ' + s),
+    datasets
+  }, {
+    plugins: { legend: { position: 'top' } },
+    scales: { y: { ticks: { callback: v => v + ' €' } } }
+  });
+
+  renderTablaComparativa('es-tabla', datos, COL.E_PRODUCTO, COL.E_SEMANA, COL.E_PVP);
+}
+
+// ================================================================
+// HELPER: TABLA PIVOTE (filas=producto, columnas=eje, valor=pvp medio)
+// ================================================================
+function renderTablaComparativa(contenedorId, datos, colFilaOpciones, colColumnaOpciones, colValorOpciones) {
+  const contenedor = document.getElementById(contenedorId);
+  if (!contenedor) return;
+  if (datos.length === 0) { contenedor.innerHTML = '<div class="sin-datos">Sin datos</div>'; return; }
+
+  const colFila    = col(datos[0], colFilaOpciones);
+  const colColumna = col(datos[0], colColumnaOpciones);
+  const colValor   = col(datos[0], colValorOpciones);
+
+  const filas    = [...new Set(datos.map(r => r[colFila]))].filter(Boolean).sort();
+  const columnas = [...new Set(datos.map(r => r[colColumna]))].filter(Boolean).sort();
+
+  // Pivote
+  const pivote = {};
+  filas.forEach(f => {
+    pivote[f] = {};
+    columnas.forEach(c => {
+      const subset = datos.filter(r => r[colFila] === f && r[colColumna] === c);
+      pivote[f][c] = subset.length > 0 ? mediaColumna(subset, colValor) : null;
+    });
+  });
+
+  let html = '<div class="tabla-contenedor"><table><thead><tr><th>' + colFila + '</th>';
+  columnas.forEach(c => { html += `<th>${c}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  filas.forEach(f => {
+    html += `<tr><td style="white-space:normal;max-width:220px">${f}</td>`;
+    columnas.forEach(c => {
+      const v = pivote[f][c];
+      html += `<td style="text-align:right">${v != null ? formatearPrecio(v) : '-'}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  contenedor.innerHTML = html;
+}
+
+// ================================================================
+// INICIALIZAR
+// ================================================================
+window.addEventListener('DOMContentLoaded', () => {
+  navegarA('visitas');
+  inicializar();
+});
+</script>
+</body>
+</html>

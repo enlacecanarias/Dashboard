@@ -1,0 +1,13 @@
+#!/bin/bash
+open "https://console.firebase.google.com/project/enlace-canarias/authentication/providers"
+echo ""
+echo "Se ha abierto Firebase Console en Chrome."
+echo ""
+echo "Pasos para habilitar autenticacion anonima:"
+echo "  1. Haz clic en 'Anonimo' en la lista"
+echo "  2. Activa el interruptor 'Habilitar'"
+echo "  3. Haz clic en 'Guardar'"
+echo ""
+echo "Despues cierra esta ventana y ejecuta 'actualizar.command'"
+echo ""
+read -p "Pulsa Enter para cerrar..."

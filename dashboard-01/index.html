@@ -1,0 +1,2644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Arias</title>
+  <link rel="stylesheet" href="../assets/css/estilos.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script>
+    // Registrar datalabels una sola vez y desactivarlo por defecto:
+    // solo lo activan las gráficas que lo piden explícitamente.
+    if (window.Chart && window.ChartDataLabels) {
+      Chart.register(ChartDataLabels);
+      Chart.defaults.set('plugins.datalabels', { display: false });
+    }
+  </script>
+  <script src="../assets/js/utils.js"></script>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">Arias</div>
+      <div class="sidebar-logo-sub">Burgo de Arias</div>
+    </div>
+
+    <div class="sidebar-seccion">
+      <div class="sidebar-seccion-titulo">GPV</div>
+      <div class="sidebar-item" data-pagina="visitas" onclick="navegarA('visitas')">
+        <span class="icono">📋</span> Visitas
+      </div>
+      <div class="sidebar-item" data-pagina="pvp-producto" onclick="navegarA('pvp-producto')">
+        <span class="icono">🏷️</span> PVP - Producto
+      </div>
+      <div class="sidebar-item" data-pagina="pvp-centro" onclick="navegarA('pvp-centro')">
+        <span class="icono">🏪</span> PVP - Centro
+      </div>
+      <div class="sidebar-item" data-pagina="comparativa-pvp" onclick="navegarA('comparativa-pvp')">
+        <span class="icono">📊</span> Comparativa PVP
+      </div>
+      <div class="sidebar-item" data-pagina="analisis-lineal" onclick="navegarA('analisis-lineal')">
+        <span class="icono">📦</span> Análisis Lineal
+      </div>
+      <div class="sidebar-item" data-pagina="rotura-stock" onclick="navegarA('rotura-stock')">
+        <span class="icono">⚠️</span> Rotura Stock
+      </div>
+      <div class="sidebar-item" data-pagina="informe-comparativa" onclick="navegarA('informe-comparativa')">
+        <span class="icono">📄</span> Informe Comparativa
+      </div>
+      <div class="sidebar-item" data-pagina="pvp-cadenas" onclick="navegarA('pvp-cadenas')">
+        <span class="icono">🏬</span> PVP Medio x Cadenas
+      </div>
+      <div class="sidebar-item" data-pagina="pvp-semana" onclick="navegarA('pvp-semana')">
+        <span class="icono">📅</span> PVP Medio x Semana
+      </div>
+    </div>
+
+    <div class="sidebar-seccion">
+      <div class="sidebar-seccion-titulo">Ecommerce</div>
+      <div class="sidebar-item" data-pagina="ecom-comparativa" onclick="navegarA('ecom-comparativa')">
+        <span class="icono">🛒</span> Comparativa PVP
+      </div>
+      <div class="sidebar-item" data-pagina="ecom-informe" onclick="navegarA('ecom-informe')">
+        <span class="icono">📋</span> Informe Comparativa
+      </div>
+      <div class="sidebar-item" data-pagina="ecom-semana" onclick="navegarA('ecom-semana')">
+        <span class="icono">📅</span> PVP Semana
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="contenido-principal">
+    <div class="topbar">
+      <div class="topbar-titulo" id="topbar-titulo">Visitas</div>
+      <div class="topbar-controles">
+        <span id="banner-carga" style="display:none;font-size:0.75rem;padding:4px 10px;border-radius:4px;background:rgba(0,0,0,0.04)"></span>
+        <button class="btn btn-secundario" onclick="recargarDatos()" title="Recargar datos">↺ Actualizar</button>
+        <a href="../index.html" class="btn btn-secundario" style="text-decoration:none">← Portal</a>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: VISITAS -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina activa" id="pagina-visitas">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <select class="filtro-select" id="v-filtro-isla" onchange="renderVisitas()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <select class="filtro-select" id="v-filtro-cadena" onchange="renderVisitas()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <select class="filtro-select" id="v-filtro-centro" onchange="renderVisitas()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="v-filtro-desde" onchange="renderVisitas()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="v-filtro-hasta" onchange="renderVisitas()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('visitas')">Restablecer</button>
+      </div>
+
+      <div class="grid-kpis" id="v-kpis">
+        <div class="kpi"><div class="kpi-valor" id="v-kpi-visitas">-</div><div class="kpi-etiqueta">Visitas</div></div>
+        <div class="kpi"><div class="kpi-valor" id="v-kpi-cadenas">-</div><div class="kpi-etiqueta">Cadenas</div></div>
+        <div class="kpi"><div class="kpi-valor" id="v-kpi-centros">-</div><div class="kpi-etiqueta">Centros</div></div>
+        <div class="kpi"><div class="kpi-valor" id="v-kpi-productos">-</div><div class="kpi-etiqueta">Productos</div></div>
+      </div>
+
+      <div class="grid-graficas col-2-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Ubicación de centros</div>
+          <div id="v-mapa-centros" style="height:260px;border-radius:6px;overflow:hidden"></div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Visitas por cadena</div>
+          <div class="grafica-contenedor"><canvas id="v-chart-cadenas-pie"></canvas></div>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Registro de visitas</div>
+        <div id="v-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: PVP - PRODUCTO -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-pvp-producto">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="pp-filtro-producto" onchange="renderPvpProducto()" style="min-width:260px">
+            <option value="">Selecciona un producto</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <select class="filtro-select" id="pp-filtro-isla" onchange="renderPvpProducto()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <div class="ms-wrap" id="pp-ms-centro" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pp-ms-centro')">
+              <span id="pp-ms-centro-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pp-ms-centro-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <div class="ms-wrap" id="pp-ms-semana" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pp-ms-semana')">
+              <span id="pp-ms-semana-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pp-ms-semana-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="pp-filtro-desde" onchange="renderPvpProducto()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="pp-filtro-hasta" onchange="renderPvpProducto()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('pvp-producto')">Restablecer</button>
+      </div>
+      <div class="grid-graficas col-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Evolución PVP por centro</div>
+          <div class="grafica-contenedor" style="height:320px"><canvas id="pp-chart-evolucion"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle precios por centro y semana</div>
+        <div id="pp-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: PVP - CENTRO -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-pvp-centro">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <select class="filtro-select" id="pc-filtro-isla" onchange="renderPvpCentro()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <select class="filtro-select" id="pc-filtro-centro" onchange="renderPvpCentro()" style="min-width:220px">
+            <option value="">Selecciona un centro</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <div class="ms-wrap" id="pc-ms-producto" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pc-ms-producto')">
+              <span id="pc-ms-producto-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pc-ms-producto-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="pc-filtro-desde" onchange="renderPvpCentro()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="pc-filtro-hasta" onchange="renderPvpCentro()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('pvp-centro')">Restablecer</button>
+      </div>
+      <div class="grid-graficas col-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Evolución PVP por producto en el centro seleccionado</div>
+          <div class="grafica-contenedor" style="height:320px"><canvas id="pc-chart-evolucion"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle precios</div>
+        <div id="pc-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: COMPARATIVA PVP -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-comparativa-pvp">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="cp-filtro-producto" onchange="renderComparativaPvp()" style="min-width:260px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="cp-filtro-semana" onchange="renderComparativaPvp()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <select class="filtro-select" id="cp-filtro-isla" onchange="renderComparativaPvp()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <div class="ms-wrap" id="cp-ms-centro" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('cp-ms-centro')">
+              <span id="cp-ms-centro-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="cp-ms-centro-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="cp-filtro-desde" onchange="renderComparativaPvp()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="cp-filtro-hasta" onchange="renderComparativaPvp()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('comparativa-pvp')">Restablecer</button>
+      </div>
+      <div class="grid-graficas col-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Suma PVP por centro</div>
+          <div class="grafica-contenedor" style="height:360px"><canvas id="cp-chart-barras"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle comparativa</div>
+        <div id="cp-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: ANÁLISIS LINEAL -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-analisis-lineal">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <select class="filtro-select" id="al-filtro-isla" onchange="renderAnalisisLineal()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="al-filtro-producto" onchange="renderAnalisisLineal()" style="min-width:260px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <select class="filtro-select" id="al-filtro-centro" onchange="renderAnalisisLineal()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <select class="filtro-select" id="al-filtro-cadena" onchange="renderAnalisisLineal()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="al-filtro-semana" onchange="renderAnalisisLineal()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="al-filtro-desde" onchange="renderAnalisisLineal()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="al-filtro-hasta" onchange="renderAnalisisLineal()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('analisis-lineal')">Restablecer</button>
+      </div>
+      <div class="grid-kpis" id="al-kpis" style="margin-bottom:16px">
+        <div class="kpi"><div class="kpi-valor" id="al-kpi-registros">-</div><div class="kpi-etiqueta">Registros</div></div>
+        <div class="kpi"><div class="kpi-valor" id="al-kpi-rotura">-</div><div class="kpi-etiqueta">Con Rotura</div></div>
+        <div class="kpi"><div class="kpi-valor" id="al-kpi-rotura-pct">-</div><div class="kpi-etiqueta">% Rotura</div></div>
+      </div>
+      <div class="grid-graficas col-3" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Altura</div>
+          <div class="grafica-contenedor"><canvas id="al-chart-altura"></canvas></div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Facing</div>
+          <div class="grafica-contenedor"><canvas id="al-chart-facing"></canvas></div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Rotura Stock</div>
+          <div class="grafica-contenedor"><canvas id="al-chart-rotura"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle lineal</div>
+        <div id="al-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: ROTURA STOCK -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-rotura-stock">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <select class="filtro-select" id="rs-filtro-isla" onchange="renderRoturaStock()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <div class="ms-wrap" id="rs-ms-producto" onclick="event.stopPropagation()" style="min-width:260px">
+            <div class="ms-btn" onclick="toggleMS('rs-ms-producto')">
+              <span id="rs-ms-producto-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="rs-ms-producto-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <div class="ms-wrap" id="rs-ms-centro" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('rs-ms-centro')">
+              <span id="rs-ms-centro-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="rs-ms-centro-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <div class="ms-wrap" id="rs-ms-cadena" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('rs-ms-cadena')">
+              <span id="rs-ms-cadena-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="rs-ms-cadena-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <div class="ms-wrap" id="rs-ms-semana" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('rs-ms-semana')">
+              <span id="rs-ms-semana-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="rs-ms-semana-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="rs-filtro-desde" onchange="renderRoturaStock()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="rs-filtro-hasta" onchange="renderRoturaStock()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('rotura-stock')">Restablecer</button>
+      </div>
+      <div class="grid-kpis" style="margin-bottom:16px">
+        <div class="kpi"><div class="kpi-valor" id="rs-kpi-roturas">-</div><div class="kpi-etiqueta">Visitas con Rotura</div></div>
+        <div class="kpi"><div class="kpi-valor" id="rs-kpi-centros">-</div><div class="kpi-etiqueta">Centros afectados</div></div>
+        <div class="kpi"><div class="kpi-valor" id="rs-kpi-productos">-</div><div class="kpi-etiqueta">Productos afectados</div></div>
+      </div>
+      <div class="grid-graficas col-3" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Rotura por cadena</div>
+          <div class="grafica-contenedor"><canvas id="rs-chart-cadenas"></canvas></div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Top productos con rotura</div>
+          <div class="grafica-contenedor"><canvas id="rs-chart-productos"></canvas></div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">Top cadenas con rotura</div>
+          <div class="grafica-contenedor"><canvas id="rs-chart-cadenas-top"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle roturas</div>
+        <div id="rs-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: INFORME COMPARATIVA -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-informe-comparativa">
+      <div class="barra-filtros">
+        <div class="filtro-grupo filtro-grupo-destacado">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="ic-filtro-semana" onchange="renderInformeComparativa()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <div class="ms-wrap" id="ic-ms-cadena" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('ic-ms-cadena')">
+              <span id="ic-ms-cadena-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="ic-ms-cadena-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <div class="ms-wrap" id="ic-ms-centro" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('ic-ms-centro')">
+              <span id="ic-ms-centro-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="ic-ms-centro-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <div class="ms-wrap" id="ic-ms-producto" onclick="event.stopPropagation()" style="min-width:260px">
+            <div class="ms-btn" onclick="toggleMS('ic-ms-producto')">
+              <span id="ic-ms-producto-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="ic-ms-producto-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <select class="filtro-select" id="ic-filtro-isla" onchange="renderInformeComparativa()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="ic-filtro-desde" onchange="renderInformeComparativa()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="ic-filtro-hasta" onchange="renderInformeComparativa()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('informe-comparativa')">Restablecer</button>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Tabla comparativa: Producto x Centro (PVP por centro)</div>
+        <div id="ic-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: PVP MEDIO x CADENAS -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-pvp-cadenas">
+      <div class="barra-filtros">
+        <div class="filtro-grupo filtro-grupo-destacado">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="pmc-filtro-semana" onchange="renderPvpCadenas()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <div class="ms-wrap" id="pmc-ms-cadena" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pmc-ms-cadena')">
+              <span id="pmc-ms-cadena-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pmc-ms-cadena-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <div class="ms-wrap" id="pmc-ms-centro" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pmc-ms-centro')">
+              <span id="pmc-ms-centro-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pmc-ms-centro-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <div class="ms-wrap" id="pmc-ms-producto" onclick="event.stopPropagation()" style="min-width:260px">
+            <div class="ms-btn" onclick="toggleMS('pmc-ms-producto')">
+              <span id="pmc-ms-producto-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pmc-ms-producto-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <select class="filtro-select" id="pmc-filtro-isla" onchange="renderPvpCadenas()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="pmc-filtro-desde" onchange="renderPvpCadenas()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="pmc-filtro-hasta" onchange="renderPvpCadenas()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('pvp-cadenas')">Restablecer</button>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Tabla PVP medio: Producto x Cadena</div>
+        <div id="pmc-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: PVP MEDIO x SEMANA -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-pvp-semana">
+      <div class="barra-filtros">
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <select class="filtro-select" id="pms-filtro-cadena" onchange="renderPvpSemana()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <div class="ms-wrap" id="pms-ms-centro" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pms-ms-centro')">
+              <span id="pms-ms-centro-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pms-ms-centro-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <div class="ms-wrap" id="pms-ms-semana" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pms-ms-semana')">
+              <span id="pms-ms-semana-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pms-ms-semana-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <div class="ms-wrap" id="pms-ms-producto" onclick="event.stopPropagation()" style="min-width:260px">
+            <div class="ms-btn" onclick="toggleMS('pms-ms-producto')">
+              <span id="pms-ms-producto-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pms-ms-producto-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <div class="ms-wrap" id="pms-ms-isla" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pms-ms-isla')">
+              <span id="pms-ms-isla-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pms-ms-isla-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="pms-filtro-desde" onchange="renderPvpSemana()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="pms-filtro-hasta" onchange="renderPvpSemana()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('pvp-semana')">Restablecer</button>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Tabla PVP medio: Producto x Semana</div>
+        <div id="pms-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: ECOMMERCE - COMPARATIVA PVP -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-ecom-comparativa">
+      <div class="barra-filtros">
+        <div class="filtro-grupo filtro-grupo-destacado">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="ec-filtro-producto" onchange="renderEcomComparativa()" style="min-width:260px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="ec-filtro-semana" onchange="renderEcomComparativa()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena (E-Commerce)</label>
+          <select class="filtro-select" id="ec-filtro-ecom" onchange="renderEcomComparativa()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro (Categoría)</label>
+          <select class="filtro-select" id="ec-filtro-categoria" onchange="renderEcomComparativa()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Población</label>
+          <select class="filtro-select" id="ec-filtro-poblacion" onchange="renderEcomComparativa()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Fecha desde</label>
+          <input type="date" class="filtro-input" id="ec-filtro-desde" onchange="renderEcomComparativa()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Fecha hasta</label>
+          <input type="date" class="filtro-input" id="ec-filtro-hasta" onchange="renderEcomComparativa()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('ecom-comparativa')">Restablecer</button>
+      </div>
+      <div class="grid-graficas col-1" style="margin-bottom:16px">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">PVP por E-Commerce</div>
+          <div class="grafica-contenedor" style="height:320px"><canvas id="ec-chart-barras"></canvas></div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Detalle precios ecommerce</div>
+        <div id="ec-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: ECOMMERCE - INFORME COMPARATIVA -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-ecom-informe">
+      <div class="barra-filtros">
+        <div class="filtro-grupo filtro-grupo-destacado">
+          <label class="filtro-label">Semana</label>
+          <select class="filtro-select" id="ei-filtro-semana" onchange="renderEcomInforme()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <div class="ms-wrap" id="ei-ms-producto" onclick="event.stopPropagation()" style="min-width:260px">
+            <div class="ms-btn" onclick="toggleMS('ei-ms-producto')">
+              <span id="ei-ms-producto-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="ei-ms-producto-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena (E-Commerce)</label>
+          <div class="ms-wrap" id="ei-ms-cadena" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('ei-ms-cadena')">
+              <span id="ei-ms-cadena-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="ei-ms-cadena-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro (Categoría)</label>
+          <div class="ms-wrap" id="ei-ms-centro" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('ei-ms-centro')">
+              <span id="ei-ms-centro-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="ei-ms-centro-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Población</label>
+          <div class="ms-wrap" id="ei-ms-poblacion" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('ei-ms-poblacion')">
+              <span id="ei-ms-poblacion-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="ei-ms-poblacion-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Fecha desde</label>
+          <input type="date" class="filtro-input" id="ei-filtro-desde" onchange="renderEcomInforme()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Fecha hasta</label>
+          <input type="date" class="filtro-input" id="ei-filtro-hasta" onchange="renderEcomInforme()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('ecom-informe')">Restablecer</button>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Tabla comparativa: Producto x E-Commerce (PVP medio)</div>
+        <div id="ei-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: ECOMMERCE - PVP SEMANA -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-ecom-semana">
+      <div class="barra-filtros">
+        <div class="filtro-grupo filtro-grupo-destacado">
+          <label class="filtro-label">Semana</label>
+          <div class="ms-wrap" id="es-ms-semana" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('es-ms-semana')">
+              <span id="es-ms-semana-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="es-ms-semana-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Producto</label>
+          <div class="ms-wrap" id="es-ms-producto" onclick="event.stopPropagation()" style="min-width:260px">
+            <div class="ms-btn" onclick="toggleMS('es-ms-producto')">
+              <span id="es-ms-producto-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="es-ms-producto-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena (E-Commerce)</label>
+          <div class="ms-wrap" id="es-ms-cadena" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('es-ms-cadena')">
+              <span id="es-ms-cadena-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="es-ms-cadena-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro (Categoría)</label>
+          <div class="ms-wrap" id="es-ms-centro" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('es-ms-centro')">
+              <span id="es-ms-centro-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="es-ms-centro-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Población</label>
+          <div class="ms-wrap" id="es-ms-poblacion" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('es-ms-poblacion')">
+              <span id="es-ms-poblacion-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="es-ms-poblacion-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Fecha desde</label>
+          <input type="date" class="filtro-input" id="es-filtro-desde" onchange="renderEcomSemana()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Fecha hasta</label>
+          <input type="date" class="filtro-input" id="es-filtro-hasta" onchange="renderEcomSemana()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('ecom-semana')">Restablecer</button>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">PVP medio por producto y semana</div>
+        <div id="es-tabla"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ================================================================
+// CONFIGURACIÓN FIREBASE
+// ================================================================
+firebase.initializeApp({
+  apiKey:    'AIzaSyAVgnw2V2Tc9f-IHuvoJKNGyroFIfg2XlY',
+  projectId: 'enlace-canarias'
+});
+const db = firebase.firestore();
+
+// ================================================================
+// DATOS GLOBALES
+// ================================================================
+let D = {
+  visitas: [],
+  productosPvp: [],
+  infoProductos: [],
+  centros: [],
+  ecommerce: []
+};
+
+let paginaActual = 'visitas';
+let datosInicializados = false;
+
+// Columnas conocidas (se auto-detectan desde los datos reales)
+const COL = {
+  // Copia Visitas (formato KoboToolbox — columnas reales del sheet)
+  V_FECHA:    ['Fecha Visita', 'FECHA VISITA', 'Fecha', 'fecha'],
+  V_NO:       ['form_id', 'No. Visita', 'NO. VISITA', 'FORM_ID', 'ID'],
+  V_GPV:      ['user', 'GPV', 'Nombre GPV', 'NOMBRE GPV'],
+  V_CENTRO:   ['Centro', 'CENTRO', 'Nombre Centro'],
+  V_CADENA:   ['Cadena', 'CADENA'],
+  V_OBS:      ['Observaciones', 'OBSERVACIONES', 'Obs'],
+  V_SEMANA:   ['Semana', 'SEMANA', 'Nº Semana'],
+  V_ISLA:     ['Isla', 'ISLA'],
+  V_DURACION: ['Duración Visita', 'Duracion Visita', 'DURACION'],
+
+  // Copia Productos (formato KoboToolbox — columnas reales del sheet)
+  P_FECHA:    ['Fecha Visita', 'FECHA VISITA', 'Fecha', 'fecha'],
+  P_SEMANA:   ['Semana', 'SEMANA', 'Nº Semana'],
+  P_CENTRO:   ['Centro', 'CENTRO', 'Nombre Centro'],
+  P_CADENA:   ['Cadena', 'CADENA'],
+  P_GPV:      ['user', 'GPV', 'Nombre GPV'],
+  P_PRODUCTO: ['Selección de Producto', 'Producto', 'PRODUCTO', 'Nombre Producto'],
+  P_PVP:      ['Precio PVP', 'PRECIO PVP', 'PVP', 'Precio'],
+  P_ALTURA:   ['Altura', 'ALTURA', 'Posición Lineal'],
+  P_FACING:   ['Facing', 'FACING', 'Nº Facing'],
+  P_ROTURA:   ['Rotura Stock', 'ROTURA STOCK', 'Rotura', 'ROTURA'],
+  P_PROMO:    ['Promoción', 'Promocion', 'PROMOCION', 'Promo'],
+  P_CADUCIDAD:['Fecha Caducidad', 'Caducidad', 'CADUCIDAD'],
+  P_INCIDENCIA:['Incidencia', 'INCIDENCIA'],
+  P_CATEGORIA:['Categoría', 'CATEGORÍA', 'Categoria', 'CATEGORIA'],
+
+  // Ecommerce
+  E_FECHA:    ['Fecha', 'FECHA', 'Fecha Visita'],
+  E_SEMANA:   ['Semana', 'SEMANA'],
+  E_MARCA:    ['Marca', 'MARCA'],
+  E_PRODUCTO: ['Producto', 'PRODUCTO'],
+  E_ECOM:     ['E-Commerce', 'E-COMMERCE', 'Ecommerce'],
+  E_POBLACION:['Población', 'POBLACION', 'Isla', 'ISLA'],
+  E_PVP:      ['PVP', 'Precio', 'PRECIO'],
+  E_CATEGORIA:['Categoría', 'CATEGORÍA', 'Categoria'],
+};
+
+function col(row, opciones) {
+  for (const k of opciones) {
+    if (row[k] !== undefined) return k;
+  }
+  return opciones[0];
+}
+
+function val(row, opciones) {
+  for (const k of opciones) {
+    if (row[k] !== undefined) return row[k];
+  }
+  return '';
+}
+
+function numVal(row, opciones) {
+  const v = val(row, opciones);
+  const n = parseFloat(String(v).replace(',', '.'));
+  return isNaN(n) ? 0 : n;
+}
+
+// ================================================================
+// CARGA DE DATOS DESDE FIREBASE FIRESTORE
+// ================================================================
+const _fbCache = {};
+
+async function leerColeccion(coleccion) {
+  if (_fbCache[coleccion]) return _fbCache[coleccion];
+  const snapshot = await db.collection(coleccion).get();
+  const docs = snapshot.docs.map(doc => doc.data());
+  _fbCache[coleccion] = docs;
+  return docs;
+}
+
+async function inicializar() {
+  try {
+    // ── FASE 1: visitas + centros → mostrar dashboard ya ────────────
+    mostrarCargandoGlobal();
+    const [visitas, centros] = await Promise.all([
+      leerColeccion('visitas_arias'),
+      leerColeccion('centros_arias'),
+    ]);
+    D.visitas      = visitas;
+    D.centros      = centros;
+    D.productosPvp = [];
+    D.ecommerce    = [];
+    datosInicializados = true;
+    ocultarCargandoGlobal();
+    renderPagina(paginaActual);
+
+    // ── FASE 2: ecommerce + primer lote de productos (2.000 docs) ───
+    const [ecommerce, snap2a] = await Promise.all([
+      leerColeccion('ecommerce_arias'),
+      db.collection('productos_arias').limit(2000).get()
+    ]);
+    D.ecommerce    = ecommerce;
+    D.productosPvp = snap2a.docs.map(d => d.data());
+    renderPagina(paginaActual);
+    actualizarBannerCarga(D.productosPvp.length, null);
+
+    // ── FASE 3: resto de productos en segundo plano ──────────────────
+    (async () => {
+      try {
+        let cursor = snap2a.docs[snap2a.docs.length - 1];
+        while (cursor) {
+          const chunk = await db.collection('productos_arias')
+            .startAfter(cursor)
+            .limit(5000)
+            .get();
+          if (chunk.empty) break;
+          D.productosPvp = [...D.productosPvp, ...chunk.docs.map(d => d.data())];
+          cursor = chunk.docs[chunk.docs.length - 1];
+        }
+        _fbCache['productos_arias'] = D.productosPvp;
+        renderPagina(paginaActual);
+        actualizarBannerCarga(D.productosPvp.length, D.productosPvp.length);
+      } catch (err) {
+        console.error('Error cargando historial de productos:', err);
+      }
+    })();
+
+  } catch (err) {
+    ocultarCargandoGlobal();
+    alert('Error al cargar datos desde Firebase: ' + err.message);
+  }
+}
+
+function actualizarBannerCarga(cargados, total) {
+  const banner = document.getElementById('banner-carga');
+  if (!banner) return;
+  if (total === null) {
+    banner.textContent = `⟳ ${cargados.toLocaleString('es-ES')} productos · cargando historial...`;
+    banner.style.color = 'var(--color-alerta)';
+    banner.style.display = 'inline';
+  } else {
+    banner.textContent = `✓ ${total.toLocaleString('es-ES')} productos cargados`;
+    banner.style.color = 'var(--color-exito)';
+    setTimeout(() => { banner.style.display = 'none'; }, 3000);
+  }
+}
+
+async function recargarDatos() {
+  // Guardar estado actual de todos los filtros antes de recargar
+  const estadoFiltros = {};
+  document.querySelectorAll('select, input[type="date"], input[type="text"]').forEach(el => {
+    if (el.id) estadoFiltros[el.id] = el.value;
+  });
+  document.querySelectorAll('input[type="checkbox"]').forEach(el => {
+    if (el.id) estadoFiltros[el.id] = el.checked;
+  });
+
+  Object.keys(_fbCache).forEach(k => delete _fbCache[k]);
+  datosInicializados = false;
+  D.visitas = [];
+  D.productosPvp = [];
+  D.ecommerce = [];
+  await inicializar();
+
+  // Restaurar filtros tras la recarga
+  Object.keys(estadoFiltros).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === 'checkbox') el.checked = estadoFiltros[id];
+    else el.value = estadoFiltros[id];
+  });
+  // Actualizar etiquetas de multiselects
+  document.querySelectorAll('[id$="-ms-centro"],[id$="-ms-producto"],[id$="-ms-semana"],[id$="-ms-isla"],[id$="-ms-cadena"]').forEach(el => {
+    if (el.id && typeof actualizarLblMS === 'function') actualizarLblMS(el.id);
+  });
+  // Re-renderizar con los filtros restaurados
+  renderPagina(paginaActual);
+}
+
+function mostrarConfigPendiente() {
+  document.querySelectorAll('.pagina').forEach(p => {
+    p.innerHTML = `
+      <div class="tarjeta" style="max-width:600px;margin:40px auto;text-align:center;padding:40px">
+        <div style="font-size:3rem;margin-bottom:16px">⚙️</div>
+        <h2 style="margin-bottom:12px">Configuración pendiente</h2>
+        <p style="color:var(--color-texto-suave);margin-bottom:20px">
+          Necesitas desplegar el Apps Script y configurar la URL en este archivo.
+        </p>
+        <div class="tarjeta" style="text-align:left;background:var(--color-fondo)">
+          <h4>Pasos:</h4>
+          <ol style="padding-left:20px;margin-top:8px;color:var(--color-texto-suave);line-height:2">
+            <li>Abre <strong>dashboard-01/apps-script/Code.gs</strong></li>
+            <li>Crea un proyecto en <strong>script.google.com</strong></li>
+            <li>Pega el código y despliega como <strong>App web pública</strong></li>
+            <li>Copia la URL y reemplaza <code>PEGA_AQUI_TU_URL</code> en este archivo</li>
+          </ol>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function mostrarCargandoGlobal() {
+  document.querySelectorAll('.pagina.activa').forEach(p => {
+    if (!p.querySelector('.cargando-global')) {
+      const div = document.createElement('div');
+      div.className = 'cargando cargando-global';
+      div.innerHTML = '<div class="spinner"></div>Cargando datos desde Firebase...';
+      p.prepend(div);
+    }
+  });
+}
+
+function ocultarCargandoGlobal() {
+  document.querySelectorAll('.cargando-global').forEach(el => el.remove());
+}
+
+// ================================================================
+// NAVEGACIÓN
+// ================================================================
+const TITULOS = {
+  'visitas':            'Visitas',
+  'pvp-producto':       'PVP - Producto',
+  'pvp-centro':         'PVP - Centro',
+  'comparativa-pvp':    'Comparativa PVP',
+  'analisis-lineal':    'Análisis Lineal',
+  'rotura-stock':       'Rotura Stock',
+  'informe-comparativa':'Informe Comparativa',
+  'pvp-cadenas':        'PVP Medio x Cadenas',
+  'pvp-semana':         'PVP Medio x Semana',
+  'ecom-comparativa':   'Comparativa PVP Ecommerce',
+  'ecom-informe':       'Informe Comparativa Ecommerce',
+  'ecom-semana':        'PVP Semana Ecommerce',
+};
+
+function navegarA(id) {
+  document.querySelectorAll('.pagina').forEach(p => p.classList.remove('activa'));
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('activo'));
+
+  const pag = document.getElementById('pagina-' + id);
+  if (pag) pag.classList.add('activa');
+
+  const item = document.querySelector(`[data-pagina="${id}"]`);
+  if (item) item.classList.add('activo');
+
+  document.getElementById('topbar-titulo').textContent = TITULOS[id] || id;
+  paginaActual = id;
+
+  if (datosInicializados) renderPagina(id);
+
+  // El mapa Leaflet necesita recalcular tamaño al volver a la página
+  if (id === 'visitas' && _mapa) {
+    setTimeout(() => _mapa.invalidateSize(), 100);
+  }
+}
+
+function renderPagina(id) {
+  const fn = {
+    'visitas':            renderVisitas,
+    'pvp-producto':       renderPvpProducto,
+    'pvp-centro':         renderPvpCentro,
+    'comparativa-pvp':    renderComparativaPvp,
+    'analisis-lineal':    renderAnalisisLineal,
+    'rotura-stock':       renderRoturaStock,
+    'informe-comparativa':renderInformeComparativa,
+    'pvp-cadenas':        renderPvpCadenas,
+    'pvp-semana':         renderPvpSemana,
+    'ecom-comparativa':   renderEcomComparativa,
+    'ecom-informe':       renderEcomInforme,
+    'ecom-semana':        renderEcomSemana,
+  };
+  if (fn[id]) fn[id]();
+}
+
+function resetFiltros(pagina) {
+  const prefijos = {
+    'visitas':            'v',
+    'pvp-producto':       'pp',
+    'pvp-centro':         'pc',
+    'comparativa-pvp':    'cp',
+    'analisis-lineal':    'al',
+    'rotura-stock':       'rs',
+    'informe-comparativa':'ic',
+    'pvp-cadenas':        'pmc',
+    'pvp-semana':         'pms',
+    'ecom-comparativa':   'ec',
+    'ecom-informe':       'ei',
+    'ecom-semana':        'es',
+  };
+  const pref = prefijos[pagina];
+  document.querySelectorAll(`[id^="${pref}-filtro"]`).forEach(el => { el.value = ''; });
+  if (pagina === 'pvp-producto')    { resetMS('pp-ms-centro'); resetMS('pp-ms-semana'); }
+  if (pagina === 'pvp-centro')      { resetMS('pc-ms-producto'); }
+  if (pagina === 'comparativa-pvp') { resetMS('cp-ms-centro'); }
+  if (pagina === 'rotura-stock')    { resetMS('rs-ms-producto'); resetMS('rs-ms-centro'); resetMS('rs-ms-cadena'); resetMS('rs-ms-semana'); }
+  if (pagina === 'informe-comparativa') { resetMS('ic-ms-cadena'); resetMS('ic-ms-centro'); resetMS('ic-ms-producto'); icSemanaInicializada = false; }
+  if (pagina === 'pvp-cadenas')         { resetMS('pmc-ms-cadena'); resetMS('pmc-ms-centro'); resetMS('pmc-ms-producto'); pmcSemanaInicializada = false; }
+  if (pagina === 'pvp-semana')          { resetMS('pms-ms-centro'); resetMS('pms-ms-semana'); resetMS('pms-ms-producto'); resetMS('pms-ms-isla'); pmsSemanaInicializada = false; }
+  if (pagina === 'ecom-informe')        { resetMS('ei-ms-producto'); resetMS('ei-ms-cadena'); resetMS('ei-ms-centro'); resetMS('ei-ms-poblacion'); }
+  if (pagina === 'ecom-semana')         { resetMS('es-ms-semana'); resetMS('es-ms-producto'); resetMS('es-ms-cadena'); resetMS('es-ms-centro'); resetMS('es-ms-poblacion'); esSemanaInicializada = false; }
+  renderPagina(pagina);
+}
+
+// ================================================================
+// HELPERS PARA OBTENER FILTROS
+// ================================================================
+function getFiltro(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+// Config de datalabels: muestra el % sobre el total en cada porción o barra.
+// Las gráficas que no la incluyan no muestran etiquetas (display:false por defecto).
+function dlPorcentaje({ color = '#fff', minPct = 0, anchor, align } = {}) {
+  const cfg = {
+    display: true,
+    color,
+    font: { weight: 'bold', size: 11 },
+    formatter: (value, ctx) => {
+      const data = ctx.chart.data.datasets[ctx.datasetIndex].data;
+      const total = data.reduce((a, b) => a + (Number(b) || 0), 0);
+      if (!total || !value) return '';
+      const pct = value / total * 100;
+      if (pct < minPct) return '';
+      return formatearPorcentaje(pct);
+    },
+  };
+  if (anchor) cfg.anchor = anchor;
+  if (align) cfg.align = align;
+  return cfg;
+}
+
+// Reordena las opciones de un <select> numéricamente (conserva la primera "Todas/Todos").
+function ordenarSelectNumerico(id, desc = false) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  const prev = sel.value;
+  const fija = sel.options[0];
+  const resto = Array.from(sel.options).slice(1);
+  resto.sort((a, b) => desc ? Number(b.value) - Number(a.value) : Number(a.value) - Number(b.value));
+  sel.innerHTML = '';
+  sel.appendChild(fija);
+  resto.forEach(o => sel.appendChild(o));
+  sel.value = prev;
+}
+
+// ================================================================
+// MAPA DE CENTROS (Leaflet)
+// ================================================================
+let _mapa = null;
+let _mapaMarkers = [];
+
+// Parsea coordenadas del campo combinado "LATITUD-LONGITUD" (formato "28.4707,-16.253")
+function parseCoordsFromCentro(centro) {
+  const raw = String(centro['LATITUD-LONGITUD'] ?? '').trim();
+  if (!raw) return null;
+  const parts = raw.split(',');
+  if (parts.length < 2) return null;
+  const lat = parseFloat(parts[0].trim());
+  const lon = parseFloat(parts[1].trim());
+  if (isNaN(lat) || isNaN(lon) || lat === 0 || lon === 0) return null;
+  return { lat, lon };
+}
+
+function renderMapaCentros(visitasFiltradas) {
+  const contenedor = document.getElementById('v-mapa-centros');
+  if (!contenedor) return;
+
+  // Contar visitas por centro para el popup
+  const visitasPorCentro = {};
+  visitasFiltradas.forEach(v => {
+    const c = val(v, COL.V_CENTRO);
+    if (c) visitasPorCentro[c] = (visitasPorCentro[c] || 0) + 1;
+  });
+
+  // Inicializar mapa una sola vez
+  if (!_mapa) {
+    _mapa = L.map('v-mapa-centros', { zoomControl: true }).setView([28.1, -15.4], 8);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+      maxZoom: 20,
+      subdomains: 'abcd'
+    }).addTo(_mapa);
+  }
+
+  // Limpiar marcadores anteriores
+  _mapaMarkers.forEach(m => _mapa.removeLayer(m));
+  _mapaMarkers = [];
+
+  // Añadir marcadores
+  const bounds = [];
+  D.centros.forEach(centro => {
+    const coords = parseCoordsFromCentro(centro);
+    if (!coords) return;
+    const { lat, lon } = coords;
+
+    const nombre = centro['NOMBRE CENTRO'] || centro['Centro'] || centro['CENTRO'] || '';
+    const cadena = centro['CADENA'] || centro['Cadena'] || '';
+    const color  = colorCadena(cadena);
+    const nVisitas = visitasPorCentro[nombre] || 0;
+
+    const icon = L.divIcon({
+      html: `<div style="
+        background:${color};
+        width:13px;height:13px;
+        border-radius:50%;
+        border:2px solid #fff;
+        box-shadow:0 1px 4px rgba(0,0,0,0.45);
+      "></div>`,
+      className: '',
+      iconSize: [13, 13],
+      iconAnchor: [6, 6],
+      popupAnchor: [0, -8]
+    });
+
+    const marker = L.marker([lat, lon], { icon })
+      .bindPopup(`
+        <div style="font-size:13px;line-height:1.6">
+          <strong>${nombre}</strong><br>
+          <span style="color:#555">${cadena}</span><br>
+          <span style="color:#2563d4">${nVisitas} visita${nVisitas !== 1 ? 's' : ''}</span>
+        </div>
+      `)
+      .addTo(_mapa);
+
+    _mapaMarkers.push(marker);
+    bounds.push([lat, lon]);
+  });
+
+  // Ajustar vista a los marcadores
+  if (bounds.length > 0) {
+    _mapa.fitBounds(bounds, { padding: [20, 20], maxZoom: 12 });
+  }
+
+  // Forzar reflow por si el mapa estaba en contenedor oculto
+  setTimeout(() => _mapa.invalidateSize(), 50);
+}
+
+// ================================================================
+// HELPERS: ISLA
+// ================================================================
+
+/** Devuelve un mapa { nombreCentro: isla } derivado de D.visitas */
+function getCentroIslaMap() {
+  const mapa = {};
+  D.visitas.forEach(v => {
+    const c = String(val(v, COL.V_CENTRO) ?? '').trim();
+    const i = String(val(v, COL.V_ISLA)   ?? '').trim();
+    // Descartar vacíos y errores de fórmula de Google Sheets (#N/A, #REF!, etc.)
+    if (c && i && !i.startsWith('#')) mapa[c] = i;
+  });
+  return mapa;
+}
+
+/** Rellena un <select> a partir de un array de valores ya preparado */
+function rellenarSelectVals(selectId, valores, etiqueta = 'Todos') {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = `<option value="">${etiqueta}</option>`;
+  [...valores].sort().forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    sel.appendChild(opt);
+  });
+  if (prev) sel.value = prev;
+}
+
+// ================================================================
+// RENDER: VISITAS
+// ================================================================
+function renderVisitas() {
+  const filtIsla   = getFiltro('v-filtro-isla');
+  const filtCadena = getFiltro('v-filtro-cadena');
+  const filtCentro = getFiltro('v-filtro-centro');
+  const filtDesde  = getFiltro('v-filtro-desde');
+  const filtHasta  = getFiltro('v-filtro-hasta');
+
+  let datos = D.visitas;
+
+  // Poblar selectores
+  rellenarSelect('v-filtro-isla',   datos, col(datos[0]||{}, COL.V_ISLA),   'Todas');
+  rellenarSelect('v-filtro-cadena', datos, col(datos[0]||{}, COL.V_CADENA), 'Todas');
+  rellenarSelect('v-filtro-centro', datos, col(datos[0]||{}, COL.V_CENTRO), 'Todos');
+
+  // Filtrar
+  if (filtIsla)   datos = datos.filter(r => val(r, COL.V_ISLA)   === filtIsla);
+  if (filtCadena) datos = datos.filter(r => val(r, COL.V_CADENA) === filtCadena);
+  if (filtCentro) datos = datos.filter(r => val(r, COL.V_CENTRO) === filtCentro);
+  if (filtDesde || filtHasta) datos = filtrarPorFecha(datos, col(datos[0]||{}, COL.V_FECHA), filtDesde, filtHasta);
+
+  // KPIs
+  const cadenas  = new Set(datos.map(r => val(r, COL.V_CADENA))).size;
+  const centros  = new Set(datos.map(r => val(r, COL.V_CENTRO))).size;
+  const productos = D.productosPvp.length > 0
+    ? new Set(D.productosPvp.map(r => val(r, COL.P_PRODUCTO))).size
+    : '-';
+
+  document.getElementById('v-kpi-visitas').textContent  = formatearNumero(datos.length);
+  document.getElementById('v-kpi-cadenas').textContent  = cadenas;
+  document.getElementById('v-kpi-centros').textContent  = centros;
+  document.getElementById('v-kpi-productos').textContent = productos;
+
+  // Mapa de centros
+  renderMapaCentros(datos);
+
+  // Gráfica pie por cadena
+  const porCadena = agruparPor(datos, col(datos[0]||{}, COL.V_CADENA));
+  const cadenasKeys = Object.keys(porCadena).sort((a,b) => porCadena[b].length - porCadena[a].length);
+
+  // Gráfica pie por cadena
+  crearGrafica('v-chart-cadenas-pie', 'doughnut', {
+    labels: cadenasKeys,
+    datasets: [{
+      data: cadenasKeys.map(k => porCadena[k].length),
+      backgroundColor: cadenasKeys.map(k => colorCadena(k) + 'cc'),
+      borderColor: 'transparent',
+    }]
+  }, { scales: { x: { display: false }, y: { display: false } } });
+
+  // Tabla
+  const colFecha  = col(datos[0]||{}, COL.V_FECHA);
+  const colNo     = col(datos[0]||{}, COL.V_NO);
+  const colGpv    = col(datos[0]||{}, COL.V_GPV);
+  const colCentro = col(datos[0]||{}, COL.V_CENTRO);
+  const colObs    = col(datos[0]||{}, COL.V_OBS);
+
+  datos = datos.slice().sort((a, b) => new Date(b[colFecha]) - new Date(a[colFecha]));
+
+  renderizarTabla('v-tabla', [
+    { key: colFecha,  label: 'Fecha Visita',  formato: v => formatearFecha(v) },
+    { key: colNo,     label: 'No. Visita' },
+    { key: colGpv,    label: 'GPV' },
+    { key: colCentro, label: 'Centro' },
+    { key: colObs,    label: 'Observaciones', formato: v => v || '-' },
+  ], datos);
+}
+
+// ================================================================
+// RENDER: PVP - PRODUCTO
+// ================================================================
+function rellenarMSProductos(id, datos, columna) {
+  const panel = document.getElementById(id + '-panel');
+  if (!panel) return;
+  const actuales = getMSVals(id);
+  const valores = [...new Set(datos.map(r => r[columna]))].filter(Boolean).sort();
+  panel.innerHTML = valores.map(v => `
+    <label class="ms-opt">
+      <input type="checkbox" value="${String(v).replace(/"/g,'&quot;')}" ${actuales.includes(String(v)) ? 'checked' : ''}
+        onchange="actualizarLblMSProductos('${id}'); renderPvpCentro()">
+      <span>${v}</span>
+    </label>`).join('');
+  actualizarLblMSProductos(id);
+}
+
+function actualizarLblMSProductos(id) {
+  const vals = getMSVals(id);
+  const lbl = document.getElementById(id + '-lbl');
+  if (!lbl) return;
+  if (vals.length === 0) lbl.textContent = 'Todos';
+  else if (vals.length === 1) lbl.textContent = vals[0];
+  else lbl.textContent = `${vals.length} productos`;
+}
+
+function rellenarMSDesde(id, datos, columna, desc = false, etiquetaTodas = 'Todas') {
+  const panel = document.getElementById(id + '-panel');
+  if (!panel) return;
+  const actuales = getMSVals(id);
+  let valores = [...new Set(datos.map(r => r[columna]))].filter(Boolean);
+  valores.sort((a, b) => desc ? Number(b) - Number(a) : Number(a) - Number(b));
+  panel.innerHTML = valores.map(v => `
+    <label class="ms-opt">
+      <input type="checkbox" value="${String(v).replace(/"/g,'&quot;')}" ${actuales.includes(String(v)) ? 'checked' : ''}
+        onchange="actualizarLblMS('${id}'); renderPvpProducto()">
+      <span>${v}</span>
+    </label>`).join('');
+  actualizarLblMSConEtiqueta(id, etiquetaTodas);
+}
+
+function actualizarLblMSConEtiqueta(id, etiquetaTodas) {
+  const vals = getMSVals(id);
+  const lbl = document.getElementById(id + '-lbl');
+  if (!lbl) return;
+  if (vals.length === 0) lbl.textContent = etiquetaTodas;
+  else if (vals.length === 1) lbl.textContent = vals[0];
+  else lbl.textContent = `${vals.length} semanas`;
+}
+
+function initFiltrosFecha(prefDesde, prefHasta) {
+  const desde = document.getElementById(prefDesde);
+  const hasta  = document.getElementById(prefHasta);
+  if (desde && !desde.value) desde.value = new Date().getFullYear() + '-01-01';
+  if (hasta  && !hasta.value)  hasta.value  = new Date().toISOString().slice(0, 10);
+}
+
+function renderPvpProducto() {
+  const centroIslaMap = getCentroIslaMap();
+  const filtIsla     = getFiltro('pp-filtro-isla');
+  const filtProducto = getFiltro('pp-filtro-producto');
+  const filtDesde    = getFiltro('pp-filtro-desde');
+  const filtHasta    = getFiltro('pp-filtro-hasta');
+
+  const todos = D.productosPvp;
+
+  // Poblar selector de isla
+  const islas = [...new Set(Object.values(centroIslaMap))].filter(i => i && !i.startsWith('#'));
+  rellenarSelectVals('pp-filtro-isla', islas, 'Todas');
+
+  // Aplicar filtro de isla al conjunto base
+  const todosIsla = filtIsla ? todos.filter(r => centroIslaMap[val(r, COL.P_CENTRO)] === filtIsla) : todos;
+
+  rellenarSelect('pp-filtro-producto', todosIsla, col(todosIsla[0]||{}, COL.P_PRODUCTO), 'Selecciona producto');
+
+  // Año actual por defecto (antes de leer fechas)
+  initFiltrosFecha('pp-filtro-desde', 'pp-filtro-hasta');
+
+  // Construir opciones de Centro y Semana con las mismas condiciones que el gráfico:
+  // isla + producto + tiene precio + rango de fechas
+  const conPrecio = r => { const v = val(r, COL.P_PVP); return v != null && String(v).trim() !== ''; };
+  let baseParaFiltros = todosIsla.filter(conPrecio);
+  if (filtProducto) baseParaFiltros = baseParaFiltros.filter(r => val(r, COL.P_PRODUCTO) === filtProducto);
+  if (filtDesde || filtHasta) {
+    const colF = col(baseParaFiltros[0]||todosIsla[0]||{}, COL.P_FECHA);
+    baseParaFiltros = filtrarPorFecha(baseParaFiltros, colF, filtDesde, filtHasta);
+  }
+  const base = baseParaFiltros.length ? baseParaFiltros : (filtProducto ? todosIsla.filter(r => val(r, COL.P_PRODUCTO) === filtProducto) : todosIsla);
+  rellenarMS('pp-ms-centro', base, col(base[0]||{}, COL.P_CENTRO));
+  rellenarMSDesde('pp-ms-semana', base, col(base[0]||{}, COL.P_SEMANA), true, 'Todas');
+
+  // Leer filtros DESPUÉS de actualizar los selectores (descarta selecciones ya inválidas)
+  const filtCentros = getMSVals('pp-ms-centro');
+  const filtSemanas = getMSVals('pp-ms-semana');
+
+  let datos = todosIsla;
+  if (filtProducto)        datos = datos.filter(r => val(r, COL.P_PRODUCTO) === filtProducto);
+  if (filtCentros.length)   datos = datos.filter(r => filtCentros.includes(val(r, COL.P_CENTRO)));
+  if (filtSemanas.length)   datos = datos.filter(r => filtSemanas.includes(String(val(r, COL.P_SEMANA))));
+  if (filtDesde || filtHasta) datos = filtrarPorFecha(datos, col(datos[0]||{}, COL.P_FECHA), filtDesde, filtHasta);
+
+  // Agrupar por centro y semana para el gráfico
+  const centros = [...new Set(datos.map(r => val(r, COL.P_CENTRO)))].filter(Boolean).sort();
+  const semanas = [...new Set(datos.map(r => val(r, COL.P_SEMANA)))].filter(Boolean).sort((a,b) => Number(a)-Number(b));
+
+  const datasets = centros.slice(0, 10).map((centro, i) => {
+    const filasCentro = datos.filter(r => val(r, COL.P_CENTRO) === centro);
+    return {
+      label: centro,
+      data: semanas.map(s => {
+        const f = filasCentro.filter(r => String(val(r, COL.P_SEMANA)) === String(s));
+        return f.length > 0 ? mediaColumna(f, col(f[0], COL.P_PVP)) : null;
+      }),
+      borderColor: PALETA[i % PALETA.length],
+      backgroundColor: PALETA[i % PALETA.length] + '33',
+      tension: 0.3,
+      pointRadius: 4,
+      spanGaps: true,
+    };
+  });
+
+  crearGrafica('pp-chart-evolucion', 'line', {
+    labels: semanas.map(s => 'Sem. ' + s),
+    datasets
+  }, {
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: {
+        title: { display: true, text: 'Semana', color: '#5b6080', font: { size: 12, weight: '600' } }
+      },
+      y: {
+        title: { display: true, text: 'Precio (€)', color: '#5b6080', font: { size: 12, weight: '600' } },
+        ticks: { callback: v => (isNaN(v) ? v : Number(v).toFixed(2) + ' €') },
+        beginAtZero: false
+      }
+    }
+  });
+
+  const colFecha    = col(datos[0]||{}, COL.P_FECHA);
+  const colSemana   = col(datos[0]||{}, COL.P_SEMANA);
+  const colCentro   = col(datos[0]||{}, COL.P_CENTRO);
+  const colCadena   = col(datos[0]||{}, COL.P_CADENA);
+  const colProducto = col(datos[0]||{}, COL.P_PRODUCTO);
+  const colPvp      = col(datos[0]||{}, COL.P_PVP);
+
+  // Ordenar de más reciente a más antiguo
+  datos = datos.slice().sort((a, b) => new Date(b[colFecha]) - new Date(a[colFecha]));
+
+  renderizarTabla('pp-tabla', [
+    { key: colFecha,    label: 'Fecha',    formato: v => formatearFecha(v) },
+    { key: colSemana,   label: 'Semana',   formato: v => 'Sem. ' + v },
+    { key: colCentro,   label: 'Centro' },
+    { key: colCadena,   label: 'Cadena',   formato: v => badgeCadena(v) },
+    { key: colProducto, label: 'Producto' },
+    { key: colPvp,      label: 'PVP',      formato: v => formatearPrecio(v) },
+  ], datos);
+}
+
+// ================================================================
+// RENDER: PVP - CENTRO
+// ================================================================
+function renderPvpCentro() {
+  const centroIslaMap = getCentroIslaMap();
+  const filtIsla  = getFiltro('pc-filtro-isla');
+
+  const todos = D.productosPvp;
+
+  // Poblar selector de isla
+  const islas = [...new Set(Object.values(centroIslaMap))].filter(i => i && !i.startsWith('#'));
+  rellenarSelectVals('pc-filtro-isla', islas, 'Todas');
+
+  // Filtrar centros por isla para el select de centro
+  const todosIsla = filtIsla ? todos.filter(r => centroIslaMap[val(r, COL.P_CENTRO)] === filtIsla) : todos;
+  rellenarSelect('pc-filtro-centro', todosIsla, col(todosIsla[0]||{}, COL.P_CENTRO), 'Selecciona un centro');
+
+  const filtCentro = getFiltro('pc-filtro-centro');
+
+  // Año actual por defecto (ANTES de leer las fechas)
+  initFiltrosFecha('pc-filtro-desde', 'pc-filtro-hasta');
+
+  // Leer fechas DESPUÉS de inicializar defaults
+  const filtDesde = getFiltro('pc-filtro-desde');
+  const filtHasta = getFiltro('pc-filtro-hasta');
+
+  // Construir base para el multiselect de Producto con las mismas condiciones que el gráfico:
+  // isla + tiene precio + centro seleccionado + rango de fechas
+  const conPrecio = r => { const v = val(r, COL.P_PVP); return v != null && String(v).trim() !== ''; };
+  let baseParaFiltros = todosIsla.filter(conPrecio);
+  if (filtCentro) baseParaFiltros = baseParaFiltros.filter(r => val(r, COL.P_CENTRO) === filtCentro);
+  if (filtDesde || filtHasta) {
+    const colF = col(baseParaFiltros[0]||todosIsla[0]||{}, COL.P_FECHA);
+    baseParaFiltros = filtrarPorFecha(baseParaFiltros, colF, filtDesde, filtHasta);
+  }
+  const base = baseParaFiltros.length ? baseParaFiltros : (filtCentro ? todosIsla.filter(r => val(r, COL.P_CENTRO) === filtCentro) : todosIsla);
+  rellenarMSProductos('pc-ms-producto', base, col(base[0]||{}, COL.P_PRODUCTO));
+
+  // Leer filtros DESPUÉS de rellenar (descarta selecciones ya inválidas)
+  const filtProductos = getMSVals('pc-ms-producto');
+
+  let datos = todosIsla;
+  if (filtCentro)            datos = datos.filter(r => val(r, COL.P_CENTRO) === filtCentro);
+  if (filtProductos.length)   datos = datos.filter(r => filtProductos.includes(val(r, COL.P_PRODUCTO)));
+  if (filtDesde || filtHasta) datos = filtrarPorFecha(datos, col(datos[0]||{}, COL.P_FECHA), filtDesde, filtHasta);
+
+  const productos = [...new Set(datos.map(r => val(r, COL.P_PRODUCTO)))].filter(Boolean).sort();
+  const semanas   = [...new Set(datos.map(r => val(r, COL.P_SEMANA)))].filter(Boolean).sort((a,b) => Number(a)-Number(b));
+
+  const datasets = productos.slice(0, 10).map((prod, i) => {
+    const filasProd = datos.filter(r => val(r, COL.P_PRODUCTO) === prod);
+    return {
+      label: prod.substring(0, 30),
+      data: semanas.map(s => {
+        const f = filasProd.filter(r => String(val(r, COL.P_SEMANA)) === String(s));
+        return f.length > 0 ? mediaColumna(f, col(f[0], COL.P_PVP)) : null;
+      }),
+      borderColor: PALETA[i % PALETA.length],
+      backgroundColor: PALETA[i % PALETA.length] + '33',
+      tension: 0.3,
+      pointRadius: 4,
+      spanGaps: true,
+    };
+  });
+
+  crearGrafica('pc-chart-evolucion', 'line', {
+    labels: semanas.map(s => 'Sem. ' + s),
+    datasets
+  }, {
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: {
+        title: { display: true, text: 'Semana', color: '#5b6080', font: { size: 12, weight: '600' } }
+      },
+      y: {
+        title: { display: true, text: 'Precio (€)', color: '#5b6080', font: { size: 12, weight: '600' } },
+        ticks: { callback: v => (isNaN(v) ? v : Number(v).toFixed(2).replace('.', ',') + ' €') },
+        beginAtZero: false
+      }
+    }
+  });
+
+  const colFecha    = col(datos[0]||{}, COL.P_FECHA);
+  const colSemana   = col(datos[0]||{}, COL.P_SEMANA);
+  const colCentro   = col(datos[0]||{}, COL.P_CENTRO);
+  const colProducto = col(datos[0]||{}, COL.P_PRODUCTO);
+  const colPvp      = col(datos[0]||{}, COL.P_PVP);
+
+  // Ordenar de más reciente a más antiguo
+  datos = datos.slice().sort((a, b) => new Date(b[colFecha]) - new Date(a[colFecha]));
+
+  renderizarTabla('pc-tabla', [
+    { key: colFecha,    label: 'Fecha',    formato: v => formatearFecha(v) },
+    { key: colSemana,   label: 'Semana',   formato: v => 'Sem. ' + v },
+    { key: colCentro,   label: 'Centro' },
+    { key: colProducto, label: 'Producto' },
+    { key: colPvp,      label: 'PVP',      formato: v => formatearPrecio(v) },
+  ], datos);
+}
+
+// ================================================================
+// RENDER: COMPARATIVA PVP
+// ================================================================
+function rellenarMSCentrosCP(id, datos, columna) {
+  const panel = document.getElementById(id + '-panel');
+  if (!panel) return;
+  const actuales = getMSVals(id);
+  const valores = [...new Set(datos.map(r => r[columna]))].filter(Boolean).sort();
+  panel.innerHTML = valores.map(v => `
+    <label class="ms-opt">
+      <input type="checkbox" value="${String(v).replace(/"/g,'&quot;')}" ${actuales.includes(String(v)) ? 'checked' : ''}
+        onchange="actualizarLblMS('${id}'); renderComparativaPvp()">
+      <span>${v}</span>
+    </label>`).join('');
+  actualizarLblMS(id);
+}
+
+function renderComparativaPvp() {
+  const centroIslaMap = getCentroIslaMap();
+  const filtIsla = getFiltro('cp-filtro-isla');
+
+  const todos = D.productosPvp;
+
+  // Poblar selector de isla
+  const islas = [...new Set(Object.values(centroIslaMap))].filter(i => i && !i.startsWith('#'));
+  rellenarSelectVals('cp-filtro-isla', islas, 'Todas');
+
+  // Base por isla
+  const todosIsla = filtIsla ? todos.filter(r => centroIslaMap[val(r, COL.P_CENTRO)] === filtIsla) : todos;
+
+  // Cascada: isla → producto
+  rellenarSelect('cp-filtro-producto', todosIsla, col(todosIsla[0]||{}, COL.P_PRODUCTO));
+
+  // Leer filtProducto DESPUÉS de rellenar (descarta stale)
+  const filtProducto = getFiltro('cp-filtro-producto');
+
+  // Año actual por defecto (antes de leer fechas)
+  initFiltrosFecha('cp-filtro-desde', 'cp-filtro-hasta');
+  const filtDesde = getFiltro('cp-filtro-desde');
+  const filtHasta = getFiltro('cp-filtro-hasta');
+
+  // Base para semana y centro: isla + conPrecio + producto + fechas
+  const conPrecio = r => { const v = val(r, COL.P_PVP); return v != null && String(v).trim() !== ''; };
+  let baseParaFiltros = todosIsla.filter(conPrecio);
+  if (filtProducto) baseParaFiltros = baseParaFiltros.filter(r => val(r, COL.P_PRODUCTO) === filtProducto);
+  if (filtDesde || filtHasta) {
+    const colF = col(baseParaFiltros[0]||todosIsla[0]||{}, COL.P_FECHA);
+    baseParaFiltros = filtrarPorFecha(baseParaFiltros, colF, filtDesde, filtHasta);
+  }
+  const base = baseParaFiltros.length ? baseParaFiltros : (filtProducto ? todosIsla.filter(r => val(r, COL.P_PRODUCTO) === filtProducto) : todosIsla);
+
+  // Poblar semana (mayor a menor) desde base
+  const colSemBase = col(base[0]||{}, COL.P_SEMANA);
+  const semanasBase = [...new Set(base.map(r => r[colSemBase]))].filter(Boolean).sort((a, b) => Number(b) - Number(a));
+  const selSem = document.getElementById('cp-filtro-semana');
+  if (selSem) {
+    const prevSem = selSem.value;
+    selSem.innerHTML = '<option value="">Todas</option>';
+    semanasBase.forEach(v => {
+      const o = document.createElement('option');
+      o.value = String(v);
+      o.textContent = String(v);
+      selSem.appendChild(o);
+    });
+    if (prevSem) selSem.value = prevSem;
+  }
+
+  // Poblar Centro multiselect desde base
+  rellenarMSCentrosCP('cp-ms-centro', base, col(base[0]||{}, COL.P_CENTRO));
+
+  // Leer filtros DESPUÉS de rellenar (descarta selecciones ya inválidas)
+  const filtSemana  = getFiltro('cp-filtro-semana');
+  const filtCentros = getMSVals('cp-ms-centro');
+
+  let datos = todosIsla;
+  if (filtProducto)           datos = datos.filter(r => val(r, COL.P_PRODUCTO) === filtProducto);
+  if (filtSemana)             datos = datos.filter(r => String(val(r, COL.P_SEMANA)) === filtSemana);
+  if (filtCentros.length)     datos = datos.filter(r => filtCentros.includes(val(r, COL.P_CENTRO)));
+  if (filtDesde || filtHasta) datos = filtrarPorFecha(datos, col(datos[0]||{}, COL.P_FECHA), filtDesde, filtHasta);
+
+  const porCentro = agruparPor(datos, col(datos[0]||{}, COL.P_CENTRO));
+  const centros = Object.keys(porCentro).sort((a, b) =>
+    sumarColumna(porCentro[b], col(porCentro[b][0], COL.P_PVP)) -
+    sumarColumna(porCentro[a], col(porCentro[a][0], COL.P_PVP))
+  );
+
+  crearGrafica('cp-chart-barras', 'bar', {
+    labels: centros,
+    datasets: [{
+      label: 'Suma PVP',
+      data: centros.map(c => sumarColumna(porCentro[c], col(porCentro[c][0], COL.P_PVP))),
+      backgroundColor: centros.map(c => colorCadena(c) + 'cc'),
+      borderColor:     centros.map(c => colorCadena(c)),
+      borderWidth: 1, borderRadius: 4,
+    }]
+  }, {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: {
+        title: { display: true, text: 'Suma PVP (€)', color: '#5b6080', font: { size: 12, weight: '600' } },
+        ticks: { callback: v => (isNaN(v) ? v : Number(v).toFixed(2).replace('.', ',') + ' €') }
+      },
+      y: { ticks: { font: { size: 10 } } }
+    }
+  });
+
+  const colFecha    = col(datos[0]||{}, COL.P_FECHA);
+  const colCentro   = col(datos[0]||{}, COL.P_CENTRO);
+  const colCadena   = col(datos[0]||{}, COL.P_CADENA);
+  const colProducto = col(datos[0]||{}, COL.P_PRODUCTO);
+  const colSemana   = col(datos[0]||{}, COL.P_SEMANA);
+  const colPvp      = col(datos[0]||{}, COL.P_PVP);
+
+  // Ordenar de más reciente a más antiguo
+  datos = datos.slice().sort((a, b) => new Date(b[colFecha]) - new Date(a[colFecha]));
+
+  renderizarTabla('cp-tabla', [
+    { key: colFecha,    label: 'Fecha',    formato: v => formatearFecha(v) },
+    { key: colCentro,   label: 'Centro' },
+    { key: colCadena,   label: 'Cadena',   formato: v => badgeCadena(v) },
+    { key: colProducto, label: 'Producto' },
+    { key: colSemana,   label: 'Semana',   formato: v => 'Sem. ' + v },
+    { key: colPvp,      label: 'PVP',      formato: v => formatearPrecio(v) },
+  ], datos);
+}
+
+// ================================================================
+// RENDER: ANÁLISIS LINEAL
+// ================================================================
+function renderAnalisisLineal() {
+  // Año actual por defecto (antes de leer las fechas)
+  initFiltrosFecha('al-filtro-desde', 'al-filtro-hasta');
+
+  const centroIslaMap = getCentroIslaMap();
+  const filtIsla     = getFiltro('al-filtro-isla');
+  const filtProducto = getFiltro('al-filtro-producto');
+  const filtCentro   = getFiltro('al-filtro-centro');
+  const filtCadena   = getFiltro('al-filtro-cadena');
+  const filtSemana   = getFiltro('al-filtro-semana');
+  const filtDesde    = getFiltro('al-filtro-desde');
+  const filtHasta    = getFiltro('al-filtro-hasta');
+
+  const todos = D.productosPvp;
+  const colFecha = col(todos[0]||{}, COL.P_FECHA);
+
+  // Poblar selector de isla (lista completa de islas)
+  const islas = [...new Set(Object.values(centroIslaMap))].filter(i => i && !i.startsWith('#'));
+  rellenarSelectVals('al-filtro-isla', islas, 'Todas');
+
+  // Fecha e isla siempre aplican (no son dropdown en cascada): son la base.
+  let base = (filtDesde || filtHasta)
+    ? filtrarPorFecha(todos, colFecha, filtDesde, filtHasta)
+    : todos;
+  if (filtIsla) base = base.filter(r => centroIslaMap[val(r, COL.P_CENTRO)] === filtIsla);
+
+  // Filtros en cascada: cada dropdown se construye con los datos que cumplen
+  // TODOS los demás filtros activos (no el propio) dentro del rango de fechas.
+  const cumple = (r, excepto) =>
+    (excepto === 'producto' || !filtProducto || val(r, COL.P_PRODUCTO) === filtProducto) &&
+    (excepto === 'centro'   || !filtCentro   || val(r, COL.P_CENTRO)   === filtCentro)   &&
+    (excepto === 'cadena'   || !filtCadena   || val(r, COL.P_CADENA)   === filtCadena)   &&
+    (excepto === 'semana'   || !filtSemana   || String(val(r, COL.P_SEMANA)) === filtSemana);
+
+  rellenarSelect('al-filtro-producto', base.filter(r => cumple(r, 'producto')), col(base[0]||{}, COL.P_PRODUCTO));
+  rellenarSelect('al-filtro-centro',   base.filter(r => cumple(r, 'centro')),   col(base[0]||{}, COL.P_CENTRO));
+  rellenarSelect('al-filtro-cadena',   base.filter(r => cumple(r, 'cadena')),   col(base[0]||{}, COL.P_CADENA));
+  rellenarSelect('al-filtro-semana',   base.filter(r => cumple(r, 'semana')),   col(base[0]||{}, COL.P_SEMANA));
+
+  // Semana ordenada numéricamente (no alfabéticamente: 1,2,3...10,11)
+  ordenarSelectNumerico('al-filtro-semana');
+
+  // Re-leer tras repoblar: descarta selecciones que ya no son válidas
+  const fProducto = getFiltro('al-filtro-producto');
+  const fCentro   = getFiltro('al-filtro-centro');
+  const fCadena   = getFiltro('al-filtro-cadena');
+  const fSemana   = getFiltro('al-filtro-semana');
+
+  let datos = base;
+  if (fProducto) datos = datos.filter(r => val(r, COL.P_PRODUCTO) === fProducto);
+  if (fCentro)   datos = datos.filter(r => val(r, COL.P_CENTRO) === fCentro);
+  if (fCadena)   datos = datos.filter(r => val(r, COL.P_CADENA) === fCadena);
+  if (fSemana)   datos = datos.filter(r => String(val(r, COL.P_SEMANA)) === fSemana);
+
+  const conRotura = datos.filter(r => {
+    const v = String(val(r, COL.P_ROTURA)).toUpperCase();
+    return v === 'SI' || v === 'SÍ' || v === 'TRUE' || v === '1';
+  });
+
+  document.getElementById('al-kpi-registros').textContent = formatearNumero(datos.length);
+  document.getElementById('al-kpi-rotura').textContent    = formatearNumero(conRotura.length);
+  document.getElementById('al-kpi-rotura-pct').textContent = datos.length > 0
+    ? formatearPorcentaje(conRotura.length / datos.length * 100) : '-';
+
+  const porAltura = agruparPor(datos, col(datos[0]||{}, COL.P_ALTURA));
+  const alturas = Object.keys(porAltura)
+    .filter(k => k && !/^sin\s*definir$/i.test(k.trim()));
+  crearGrafica('al-chart-altura', 'doughnut', {
+    labels: alturas,
+    datasets: [{ data: alturas.map(k => porAltura[k].length), backgroundColor: PALETA, borderColor: 'transparent' }]
+  }, {
+    scales: { x: { display: false }, y: { display: false } },
+    plugins: { datalabels: dlPorcentaje({ minPct: 3 }) }
+  });
+
+  const porFacing = agruparPor(datos, col(datos[0]||{}, COL.P_FACING));
+  const facings = Object.keys(porFacing)
+    .filter(k => k && !/^sin\s*definir$/i.test(k.trim()))
+    .sort((a,b) => Number(a)-Number(b));
+  crearGrafica('al-chart-facing', 'bar', {
+    labels: facings,
+    datasets: [{
+      label: 'Registros',
+      data: facings.map(k => porFacing[k].length),
+      backgroundColor: PALETA[0] + 'cc', borderColor: PALETA[0], borderWidth:1, borderRadius:3,
+    }]
+  }, {
+    indexAxis: 'y',
+    plugins: {
+      legend: { display: false },
+      datalabels: dlPorcentaje({ color: '#1f2937', anchor: 'end', align: 'right' }),
+    },
+    layout: { padding: { right: 36 } },
+  });
+
+  crearGrafica('al-chart-rotura', 'doughnut', {
+    labels: ['Sin rotura', 'Con rotura'],
+    datasets: [{
+      data: [datos.length - conRotura.length, conRotura.length],
+      backgroundColor: ['rgba(46,207,138,0.8)', 'rgba(247,95,95,0.8)'],
+      borderColor: 'transparent',
+    }]
+  }, {
+    scales: { x: { display: false }, y: { display: false } },
+    plugins: { datalabels: dlPorcentaje({ minPct: 3 }) }
+  });
+
+  const colCentro   = col(datos[0]||{}, COL.P_CENTRO);
+  const colCadena   = col(datos[0]||{}, COL.P_CADENA);
+  const colProducto = col(datos[0]||{}, COL.P_PRODUCTO);
+  const colSemana   = col(datos[0]||{}, COL.P_SEMANA);
+  const colAltura   = col(datos[0]||{}, COL.P_ALTURA);
+  const colFacing   = col(datos[0]||{}, COL.P_FACING);
+  const colRotura   = col(datos[0]||{}, COL.P_ROTURA);
+
+  // Ordenar de más reciente a más antiguo (por fecha)
+  const datosTabla = datos.slice().sort((a, b) => new Date(b[colFecha]) - new Date(a[colFecha]));
+
+  renderizarTabla('al-tabla', [
+    { key: colSemana,   label: 'Semana',  formato: v => 'Sem. ' + v },
+    { key: colCentro,   label: 'Centro' },
+    { key: colCadena,   label: 'Cadena',  formato: v => badgeCadena(v) },
+    { key: colProducto, label: 'Producto' },
+    { key: colAltura,   label: 'Altura' },
+    { key: colFacing,   label: 'Facing' },
+    { key: colRotura,   label: 'Rotura',  formato: v => badgeRotura(v) },
+  ], datosTabla);
+}
+
+// ================================================================
+// RENDER: ROTURA STOCK
+// ================================================================
+// Multiselect genérico desde un array de valores (etiqueta y función de render).
+// Excluye valores vacíos y errores de fórmula (#N/A, #REF!, etc.).
+function rellenarMSGenVals(id, valores, etiquetaTodas, renderFn, numericDesc = false) {
+  const panel = document.getElementById(id + '-panel');
+  if (!panel) return;
+  const actuales = getMSVals(id);
+  let vals = [...new Set(valores)].filter(v => v !== '' && v != null && !String(v).startsWith('#'));
+  if (numericDesc) vals.sort((a, b) => Number(b) - Number(a));
+  else vals.sort();
+  panel.innerHTML = vals.map(v => {
+    const sv = String(v);
+    return `
+    <label class="ms-opt">
+      <input type="checkbox" value="${sv.replace(/"/g,'&quot;')}" ${actuales.includes(sv) ? 'checked' : ''}
+        onchange="actualizarLblMSGen('${id}','${etiquetaTodas}'); ${renderFn}()">
+      <span>${sv}</span>
+    </label>`;
+  }).join('');
+  actualizarLblMSGen(id, etiquetaTodas);
+}
+
+// Multiselect genérico desde datos + columna.
+function rellenarMSGen(id, datos, columna, etiquetaTodas, renderFn, numericDesc = false) {
+  rellenarMSGenVals(id, datos.map(r => r[columna]), etiquetaTodas, renderFn, numericDesc);
+}
+
+function actualizarLblMSGen(id, etiquetaTodas) {
+  const vals = getMSVals(id);
+  const lbl = document.getElementById(id + '-lbl');
+  if (!lbl) return;
+  if (vals.length === 0) lbl.textContent = etiquetaTodas;
+  else if (vals.length === 1) lbl.textContent = vals[0];
+  else lbl.textContent = vals.length + ' seleccionados';
+}
+
+function renderRoturaStock() {
+  // Año actual por defecto (antes de leer las fechas)
+  initFiltrosFecha('rs-filtro-desde', 'rs-filtro-hasta');
+
+  const centroIslaMap = getCentroIslaMap();
+  const filtIsla     = getFiltro('rs-filtro-isla');
+  const filtDesde    = getFiltro('rs-filtro-desde');
+  const filtHasta    = getFiltro('rs-filtro-hasta');
+
+  // Selecciones múltiples actuales (arrays de strings)
+  const selProducto = getMSVals('rs-ms-producto');
+  const selCentro   = getMSVals('rs-ms-centro');
+  const selCadena   = getMSVals('rs-ms-cadena');
+  const selSemana   = getMSVals('rs-ms-semana');
+
+  const todos = D.productosPvp;
+  const colFecha = col(todos[0]||{}, COL.P_FECHA);
+
+  // Poblar selector de isla (lista completa de islas)
+  const islas = [...new Set(Object.values(centroIslaMap))].filter(i => i && !i.startsWith('#'));
+  rellenarSelectVals('rs-filtro-isla', islas, 'Todas');
+
+  // Solo registros con rotura, dentro de fecha e isla (base del análisis)
+  let base = todos.filter(r => {
+    const v = String(val(r, COL.P_ROTURA)).toUpperCase();
+    return v === 'SI' || v === 'SÍ' || v === 'TRUE' || v === '1';
+  });
+  if (filtDesde || filtHasta) base = filtrarPorFecha(base, colFecha, filtDesde, filtHasta);
+  if (filtIsla) base = base.filter(r => centroIslaMap[val(r, COL.P_CENTRO)] === filtIsla);
+
+  // En selección múltiple: array vacío = sin filtro (todos).
+  const inSel = (arr, v) => arr.length === 0 || arr.includes(String(v));
+
+  // Filtros en cascada: cada dropdown se construye con los datos que cumplen
+  // TODOS los demás filtros activos (no el propio).
+  const cumple = (r, excepto) =>
+    (excepto === 'producto' || inSel(selProducto, val(r, COL.P_PRODUCTO))) &&
+    (excepto === 'centro'   || inSel(selCentro,   val(r, COL.P_CENTRO)))   &&
+    (excepto === 'cadena'   || inSel(selCadena,   val(r, COL.P_CADENA)))   &&
+    (excepto === 'semana'   || inSel(selSemana,   val(r, COL.P_SEMANA)));
+
+  rellenarMSGen('rs-ms-producto', base.filter(r => cumple(r, 'producto')), col(base[0]||{}, COL.P_PRODUCTO), 'Todos', 'renderRoturaStock');
+  rellenarMSGen('rs-ms-centro',   base.filter(r => cumple(r, 'centro')),   col(base[0]||{}, COL.P_CENTRO),   'Todos', 'renderRoturaStock');
+  rellenarMSGen('rs-ms-cadena',   base.filter(r => cumple(r, 'cadena')),   col(base[0]||{}, COL.P_CADENA),   'Todas', 'renderRoturaStock');
+  // Semana de más reciente a más antiguo (descendente)
+  rellenarMSGen('rs-ms-semana',   base.filter(r => cumple(r, 'semana')),   col(base[0]||{}, COL.P_SEMANA),   'Todas', 'renderRoturaStock', true);
+
+  // Re-leer tras repoblar: descarta selecciones que ya no son válidas
+  const fProducto = getMSVals('rs-ms-producto');
+  const fCentro   = getMSVals('rs-ms-centro');
+  const fCadena   = getMSVals('rs-ms-cadena');
+  const fSemana   = getMSVals('rs-ms-semana');
+
+  let datos = base;
+  if (fProducto.length) datos = datos.filter(r => fProducto.includes(String(val(r, COL.P_PRODUCTO))));
+  if (fCentro.length)   datos = datos.filter(r => fCentro.includes(String(val(r, COL.P_CENTRO))));
+  if (fCadena.length)   datos = datos.filter(r => fCadena.includes(String(val(r, COL.P_CADENA))));
+  if (fSemana.length)   datos = datos.filter(r => fSemana.includes(String(val(r, COL.P_SEMANA))));
+
+  document.getElementById('rs-kpi-roturas').textContent  = formatearNumero(datos.length);
+  document.getElementById('rs-kpi-centros').textContent  = new Set(datos.map(r => val(r, COL.P_CENTRO))).size;
+  document.getElementById('rs-kpi-productos').textContent= new Set(datos.map(r => val(r, COL.P_PRODUCTO))).size;
+
+  const porCadena = agruparPor(datos, col(datos[0]||{}, COL.P_CADENA));
+  const cadenas   = Object.keys(porCadena).filter(Boolean);
+  crearGrafica('rs-chart-cadenas', 'doughnut', {
+    labels: cadenas,
+    datasets: [{ data: cadenas.map(k => porCadena[k].length), backgroundColor: cadenas.map(k => colorCadena(k) + 'cc'), borderColor: 'transparent' }]
+  }, {
+    scales: { x: { display: false }, y: { display: false } },
+    plugins: { datalabels: dlPorcentaje({ minPct: 3 }) }
+  });
+
+  const porProducto = agruparPor(datos, col(datos[0]||{}, COL.P_PRODUCTO));
+  const topProds = Object.keys(porProducto).sort((a,b) => porProducto[b].length - porProducto[a].length).slice(0, 10);
+  crearGrafica('rs-chart-productos', 'bar', {
+    labels: topProds.map(p => p.substring(0,25)),
+    datasets: [{
+      label: 'Roturas',
+      data: topProds.map(p => porProducto[p].length),
+      backgroundColor: '#f75f5fcc', borderColor: '#f75f5f', borderWidth:1, borderRadius:3,
+    }]
+  }, {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: { y: { ticks: { font: { size: 10 } } } }
+  });
+
+  const topCadenas = Object.keys(porCadena).sort((a,b) => porCadena[b].length - porCadena[a].length).slice(0, 10);
+  crearGrafica('rs-chart-cadenas-top', 'bar', {
+    labels: topCadenas.map(c => c.substring(0,25)),
+    datasets: [{
+      label: 'Roturas',
+      data: topCadenas.map(c => porCadena[c].length),
+      backgroundColor: topCadenas.map(c => colorCadena(c) + 'cc'),
+      borderColor: topCadenas.map(c => colorCadena(c)), borderWidth:1, borderRadius:3,
+    }]
+  }, {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: { y: { ticks: { font: { size: 10 } } } }
+  });
+
+  const colSemana   = col(datos[0]||{}, COL.P_SEMANA);
+  const colCentro   = col(datos[0]||{}, COL.P_CENTRO);
+  const colCadena   = col(datos[0]||{}, COL.P_CADENA);
+  const colProducto = col(datos[0]||{}, COL.P_PRODUCTO);
+
+  // Ordenar de más reciente a más antiguo (por fecha)
+  const datosTabla = datos.slice().sort((a, b) => new Date(b[colFecha]) - new Date(a[colFecha]));
+
+  renderizarTabla('rs-tabla', [
+    { key: colFecha,    label: 'Fecha',   formato: v => formatearFecha(v) },
+    { key: colSemana,   label: 'Semana',  formato: v => 'Sem. ' + v },
+    { key: colCentro,   label: 'Centro' },
+    { key: colCadena,   label: 'Cadena',  formato: v => badgeCadena(v) },
+    { key: colProducto, label: 'Producto' },
+  ], datosTabla);
+}
+
+// ================================================================
+// RENDER: INFORME COMPARATIVA (tabla pivote Producto x Centro)
+// ================================================================
+// Al abrir el informe, Semana arranca en la última semana (no "Todas").
+let icSemanaInicializada = false;
+function renderInformeComparativa() {
+  // Año actual por defecto (antes de leer las fechas)
+  initFiltrosFecha('ic-filtro-desde', 'ic-filtro-hasta');
+
+  const centroIslaMap = getCentroIslaMap();
+  const filtIsla   = getFiltro('ic-filtro-isla');
+  const filtDesde  = getFiltro('ic-filtro-desde');
+  const filtHasta  = getFiltro('ic-filtro-hasta');
+
+  // Selecciones múltiples actuales (arrays de strings)
+  const selCadena   = getMSVals('ic-ms-cadena');
+  const selCentro   = getMSVals('ic-ms-centro');
+  const selProducto = getMSVals('ic-ms-producto');
+
+  const todos = D.productosPvp;
+  const colFecha = col(todos[0]||{}, COL.P_FECHA);
+
+  // Poblar selector de isla (lista completa de islas)
+  const islas = [...new Set(Object.values(centroIslaMap))].filter(i => i && !i.startsWith('#'));
+  rellenarSelectVals('ic-filtro-isla', islas, 'Todas');
+
+  // Base: fecha e isla (siempre aplican)
+  let base = todos;
+  if (filtDesde || filtHasta) base = filtrarPorFecha(base, colFecha, filtDesde, filtHasta);
+  if (filtIsla) base = base.filter(r => centroIslaMap[val(r, COL.P_CENTRO)] === filtIsla);
+
+  // Semana: filtro principal de selección única, ordenado de más reciente a más antiguo.
+  rellenarSelect('ic-filtro-semana', base, col(base[0]||{}, COL.P_SEMANA));
+  ordenarSelectNumerico('ic-filtro-semana', true);
+  // Valor por defecto al abrir: la última semana (primera opción tras "Todas").
+  // El flag solo se marca cuando ya hay semanas, para no perder el default si el
+  // primer render ocurre sin datos (carga asíncrona o rango de fechas vacío).
+  const selSem = document.getElementById('ic-filtro-semana');
+  if (!icSemanaInicializada && selSem && selSem.options.length > 1) {
+    if (!selSem.value) selSem.value = selSem.options[1].value;
+    icSemanaInicializada = true;
+  }
+  const fSemana = getFiltro('ic-filtro-semana');
+  let baseSemana = fSemana ? base.filter(r => String(val(r, COL.P_SEMANA)) === fSemana) : base;
+
+  // Filtros múltiples en cascada: array vacío = sin filtro.
+  const inSel = (arr, v) => arr.length === 0 || arr.includes(String(v));
+  const cumple = (r, excepto) =>
+    (excepto === 'cadena'   || inSel(selCadena,   val(r, COL.P_CADENA)))   &&
+    (excepto === 'centro'   || inSel(selCentro,   val(r, COL.P_CENTRO)))   &&
+    (excepto === 'producto' || inSel(selProducto, val(r, COL.P_PRODUCTO)));
+
+  rellenarMSGen('ic-ms-cadena',   baseSemana.filter(r => cumple(r, 'cadena')),   col(baseSemana[0]||{}, COL.P_CADENA),   'Todas', 'renderInformeComparativa');
+  rellenarMSGen('ic-ms-centro',   baseSemana.filter(r => cumple(r, 'centro')),   col(baseSemana[0]||{}, COL.P_CENTRO),   'Todos', 'renderInformeComparativa');
+  rellenarMSGen('ic-ms-producto', baseSemana.filter(r => cumple(r, 'producto')), col(baseSemana[0]||{}, COL.P_PRODUCTO), 'Todos', 'renderInformeComparativa');
+
+  // Re-leer tras repoblar: descarta selecciones ya inválidas
+  const fCadena   = getMSVals('ic-ms-cadena');
+  const fCentro   = getMSVals('ic-ms-centro');
+  const fProducto = getMSVals('ic-ms-producto');
+
+  let datos = baseSemana;
+  if (fCadena.length)   datos = datos.filter(r => fCadena.includes(String(val(r, COL.P_CADENA))));
+  if (fCentro.length)   datos = datos.filter(r => fCentro.includes(String(val(r, COL.P_CENTRO))));
+  if (fProducto.length) datos = datos.filter(r => fProducto.includes(String(val(r, COL.P_PRODUCTO))));
+
+  // Columnas = Centros: compara el PVP de cada centro (no el PVP medio por cadena).
+  renderTablaComparativa('ic-tabla', datos, COL.P_PRODUCTO, COL.P_CENTRO, COL.P_PVP);
+}
+
+// ================================================================
+// RENDER: PVP MEDIO x CADENAS
+// ================================================================
+// Al abrir, Semana arranca en la última semana (no "Todas").
+let pmcSemanaInicializada = false;
+function renderPvpCadenas() {
+  // Año actual por defecto (antes de leer las fechas)
+  initFiltrosFecha('pmc-filtro-desde', 'pmc-filtro-hasta');
+
+  const centroIslaMap = getCentroIslaMap();
+  const filtIsla   = getFiltro('pmc-filtro-isla');
+  const filtDesde  = getFiltro('pmc-filtro-desde');
+  const filtHasta  = getFiltro('pmc-filtro-hasta');
+
+  // Selecciones múltiples actuales (arrays de strings)
+  const selCadena   = getMSVals('pmc-ms-cadena');
+  const selCentro   = getMSVals('pmc-ms-centro');
+  const selProducto = getMSVals('pmc-ms-producto');
+
+  const todos = D.productosPvp;
+  const colFecha = col(todos[0]||{}, COL.P_FECHA);
+
+  // Poblar selector de isla (lista completa de islas)
+  const islas = [...new Set(Object.values(centroIslaMap))].filter(i => i && !i.startsWith('#'));
+  rellenarSelectVals('pmc-filtro-isla', islas, 'Todas');
+
+  // Base: fecha e isla (siempre aplican)
+  let base = todos;
+  if (filtDesde || filtHasta) base = filtrarPorFecha(base, colFecha, filtDesde, filtHasta);
+  if (filtIsla) base = base.filter(r => centroIslaMap[val(r, COL.P_CENTRO)] === filtIsla);
+
+  // Semana: filtro principal de selección única, de más reciente a más antiguo.
+  rellenarSelect('pmc-filtro-semana', base, col(base[0]||{}, COL.P_SEMANA));
+  ordenarSelectNumerico('pmc-filtro-semana', true);
+  // Valor por defecto al abrir: la última semana (primera opción tras "Todas").
+  const selSem = document.getElementById('pmc-filtro-semana');
+  if (!pmcSemanaInicializada && selSem && selSem.options.length > 1) {
+    if (!selSem.value) selSem.value = selSem.options[1].value;
+    pmcSemanaInicializada = true;
+  }
+  const fSemana = getFiltro('pmc-filtro-semana');
+  let baseSemana = fSemana ? base.filter(r => String(val(r, COL.P_SEMANA)) === fSemana) : base;
+
+  // Filtros múltiples en cascada: array vacío = sin filtro.
+  const inSel = (arr, v) => arr.length === 0 || arr.includes(String(v));
+  const cumple = (r, excepto) =>
+    (excepto === 'cadena'   || inSel(selCadena,   val(r, COL.P_CADENA)))   &&
+    (excepto === 'centro'   || inSel(selCentro,   val(r, COL.P_CENTRO)))   &&
+    (excepto === 'producto' || inSel(selProducto, val(r, COL.P_PRODUCTO)));
+
+  rellenarMSGen('pmc-ms-cadena',   baseSemana.filter(r => cumple(r, 'cadena')),   col(baseSemana[0]||{}, COL.P_CADENA),   'Todas', 'renderPvpCadenas');
+  rellenarMSGen('pmc-ms-centro',   baseSemana.filter(r => cumple(r, 'centro')),   col(baseSemana[0]||{}, COL.P_CENTRO),   'Todos', 'renderPvpCadenas');
+  rellenarMSGen('pmc-ms-producto', baseSemana.filter(r => cumple(r, 'producto')), col(baseSemana[0]||{}, COL.P_PRODUCTO), 'Todos', 'renderPvpCadenas');
+
+  // Re-leer tras repoblar: descarta selecciones ya inválidas
+  const fCadena   = getMSVals('pmc-ms-cadena');
+  const fCentro   = getMSVals('pmc-ms-centro');
+  const fProducto = getMSVals('pmc-ms-producto');
+
+  let datos = baseSemana;
+  if (fCadena.length)   datos = datos.filter(r => fCadena.includes(String(val(r, COL.P_CADENA))));
+  if (fCentro.length)   datos = datos.filter(r => fCentro.includes(String(val(r, COL.P_CENTRO))));
+  if (fProducto.length) datos = datos.filter(r => fProducto.includes(String(val(r, COL.P_PRODUCTO))));
+
+  // Tabla: columnas = Cadena, valor = PVP medio por cadena.
+  renderTablaComparativa('pmc-tabla', datos, COL.P_PRODUCTO, COL.P_CADENA, COL.P_PVP);
+}
+
+// ================================================================
+// RENDER: PVP MEDIO x SEMANA
+// ================================================================
+// Al abrir, Semana arranca con las últimas 4 semanas preseleccionadas.
+let pmsSemanaInicializada = false;
+function renderPvpSemana() {
+  // Año actual por defecto (antes de leer las fechas)
+  initFiltrosFecha('pms-filtro-desde', 'pms-filtro-hasta');
+
+  const centroIslaMap = getCentroIslaMap();
+  const islaDe = r => centroIslaMap[val(r, COL.P_CENTRO)] || '';
+  const filtCadena = getFiltro('pms-filtro-cadena');
+  const filtDesde  = getFiltro('pms-filtro-desde');
+  const filtHasta  = getFiltro('pms-filtro-hasta');
+
+  // Selecciones múltiples actuales (arrays de strings)
+  const selCentro   = getMSVals('pms-ms-centro');
+  const selSemana   = getMSVals('pms-ms-semana');
+  const selProducto = getMSVals('pms-ms-producto');
+  const selIsla     = getMSVals('pms-ms-isla');
+
+  const todos = D.productosPvp;
+  const colFecha = col(todos[0]||{}, COL.P_FECHA);
+
+  // Base: fecha (siempre aplica)
+  let baseFecha = (filtDesde || filtHasta) ? filtrarPorFecha(todos, colFecha, filtDesde, filtHasta) : todos;
+
+  // Cadena: selección única. Se puebla con la base por fecha y se aplica.
+  rellenarSelect('pms-filtro-cadena', baseFecha, col(baseFecha[0]||{}, COL.P_CADENA));
+  const fCadena = getFiltro('pms-filtro-cadena');
+  let base = fCadena ? baseFecha.filter(r => val(r, COL.P_CADENA) === fCadena) : baseFecha;
+
+  // Filtros múltiples en cascada (isla, centro, semana, producto): array vacío = sin filtro.
+  const inSel = (arr, v) => arr.length === 0 || arr.includes(String(v));
+  const cumple = (r, excepto) =>
+    (excepto === 'isla'     || inSel(selIsla,     islaDe(r)))               &&
+    (excepto === 'centro'   || inSel(selCentro,   val(r, COL.P_CENTRO)))    &&
+    (excepto === 'semana'   || inSel(selSemana,   val(r, COL.P_SEMANA)))    &&
+    (excepto === 'producto' || inSel(selProducto, val(r, COL.P_PRODUCTO)));
+
+  rellenarMSGenVals('pms-ms-isla',   base.filter(r => cumple(r, 'isla')).map(islaDe),              'Todas', 'renderPvpSemana');
+  rellenarMSGen('pms-ms-centro',     base.filter(r => cumple(r, 'centro')),   col(base[0]||{}, COL.P_CENTRO),   'Todos', 'renderPvpSemana');
+  rellenarMSGen('pms-ms-semana',     base.filter(r => cumple(r, 'semana')),   col(base[0]||{}, COL.P_SEMANA),   'Todas', 'renderPvpSemana', true);
+  rellenarMSGen('pms-ms-producto',   base.filter(r => cumple(r, 'producto')), col(base[0]||{}, COL.P_PRODUCTO), 'Todos', 'renderPvpSemana');
+
+  // Preselección por defecto: las últimas 4 semanas disponibles.
+  if (!pmsSemanaInicializada) {
+    const semanasDisp = [...new Set(base.filter(r => cumple(r, 'semana')).map(r => Number(val(r, COL.P_SEMANA))))]
+      .filter(n => !isNaN(n)).sort((a, b) => b - a);
+    const ultimas4 = semanasDisp.slice(0, 4).map(String);
+    const panelSem = document.getElementById('pms-ms-semana-panel');
+    if (panelSem && panelSem.querySelectorAll('input').length) {
+      panelSem.querySelectorAll('input').forEach(i => { if (ultimas4.includes(i.value)) i.checked = true; });
+      actualizarLblMSGen('pms-ms-semana', 'Todas');
+      pmsSemanaInicializada = true;
+    }
+  }
+
+  // Re-leer tras repoblar / preseleccionar
+  const fIsla     = getMSVals('pms-ms-isla');
+  const fCentro   = getMSVals('pms-ms-centro');
+  const fSemana   = getMSVals('pms-ms-semana');
+  const fProducto = getMSVals('pms-ms-producto');
+
+  let datos = base;
+  if (fIsla.length)     datos = datos.filter(r => fIsla.includes(islaDe(r)));
+  if (fCentro.length)   datos = datos.filter(r => fCentro.includes(String(val(r, COL.P_CENTRO))));
+  if (fSemana.length)   datos = datos.filter(r => fSemana.includes(String(val(r, COL.P_SEMANA))));
+  if (fProducto.length) datos = datos.filter(r => fProducto.includes(String(val(r, COL.P_PRODUCTO))));
+
+  // Tabla: columnas = Semana, ordenadas de más reciente (izquierda) a más antigua (derecha).
+  renderTablaComparativa('pms-tabla', datos, COL.P_PRODUCTO, COL.P_SEMANA, COL.P_PVP, {
+    columnasNumericas: true,
+    columnasDesc: true,
+    formatoColumna: c => 'Sem. ' + c,
+  });
+}
+
+// ================================================================
+// RENDER: ECOMMERCE - COMPARATIVA PVP
+// ================================================================
+function renderEcomComparativa() {
+  const todos = D.ecommerce;
+  if (!todos || !todos.length) return;
+
+  const colFecha     = col(todos[0], COL.E_FECHA);
+  const colSemana    = col(todos[0], COL.E_SEMANA);
+  const colProducto  = col(todos[0], COL.E_PRODUCTO);
+  const colEcom      = col(todos[0], COL.E_ECOM);
+  const colCategoria = col(todos[0], COL.E_CATEGORIA);
+  const colPoblacion = col(todos[0], COL.E_POBLACION);
+  const colPvp       = col(todos[0], COL.E_PVP);
+
+  // Año actual por defecto en el filtro de fecha (Producto y Semana sin valor por defecto)
+  initFiltrosFecha('ec-filtro-desde', 'ec-filtro-hasta');
+
+  // Lectura inicial de filtros
+  let fProd = getFiltro('ec-filtro-producto');
+  let fSem  = getFiltro('ec-filtro-semana');
+  let fEcom = getFiltro('ec-filtro-ecom');
+  let fCat  = getFiltro('ec-filtro-categoria');
+  let fPob  = getFiltro('ec-filtro-poblacion');
+  const fDesde = getFiltro('ec-filtro-desde');
+  const fHasta = getFiltro('ec-filtro-hasta');
+
+  // Rango de fechas: se aplica siempre, también al construir opciones
+  const enRango = r => {
+    if (!fDesde && !fHasta) return true;
+    const f = new Date(r[colFecha]);
+    if (isNaN(f)) return true;
+    if (fDesde && f < new Date(fDesde)) return false;
+    if (fHasta && f > new Date(fHasta)) return false;
+    return true;
+  };
+
+  // Cascada: cada opción se cumple salvo el filtro indicado
+  const cumple = (r, excepto) => {
+    if (excepto !== 'producto'  && fProd && r[colProducto]  !== fProd) return false;
+    if (excepto !== 'semana'    && fSem  && String(r[colSemana]) !== fSem) return false;
+    if (excepto !== 'ecom'      && fEcom && r[colEcom]      !== fEcom) return false;
+    if (excepto !== 'categoria' && fCat  && r[colCategoria] !== fCat) return false;
+    if (excepto !== 'poblacion' && fPob  && r[colPoblacion] !== fPob) return false;
+    return true;
+  };
+
+  // Repoblar cada select solo con opciones compatibles con los demás filtros activos
+  rellenarSelect('ec-filtro-producto',  todos.filter(r => enRango(r) && cumple(r, 'producto')),  colProducto,  'Todos');
+  rellenarSelect('ec-filtro-semana',    todos.filter(r => enRango(r) && cumple(r, 'semana')),    colSemana,    'Todas');
+  ordenarSelectNumerico('ec-filtro-semana', true);
+  rellenarSelect('ec-filtro-ecom',      todos.filter(r => enRango(r) && cumple(r, 'ecom')),      colEcom,      'Todas');
+  rellenarSelect('ec-filtro-categoria', todos.filter(r => enRango(r) && cumple(r, 'categoria')), colCategoria, 'Todas');
+  rellenarSelect('ec-filtro-poblacion', todos.filter(r => enRango(r) && cumple(r, 'poblacion')), colPoblacion, 'Todas');
+
+  // Releer tras repoblar (descarta selecciones que ya no son válidas)
+  fProd = getFiltro('ec-filtro-producto');
+  fSem  = getFiltro('ec-filtro-semana');
+  fEcom = getFiltro('ec-filtro-ecom');
+  fCat  = getFiltro('ec-filtro-categoria');
+  fPob  = getFiltro('ec-filtro-poblacion');
+
+  // Datos finales
+  let datos = todos.filter(enRango);
+  if (fProd) datos = datos.filter(r => r[colProducto]  === fProd);
+  if (fSem)  datos = datos.filter(r => String(r[colSemana]) === fSem);
+  if (fEcom) datos = datos.filter(r => r[colEcom]      === fEcom);
+  if (fCat)  datos = datos.filter(r => r[colCategoria] === fCat);
+  if (fPob)  datos = datos.filter(r => r[colPoblacion] === fPob);
+
+  // Gráfico horizontal: PVP por E-Commerce (precio medio de las filas con PVP).
+  // Compara el precio del producto entre centros; los e-commerce sin PVP no se muestran.
+  const tienePvp = r => {
+    const v = parseFloat(String(r[colPvp] ?? '').replace(',', '.'));
+    return String(r[colPvp] ?? '').trim() !== '' && !isNaN(v);
+  };
+  const porEcom = agruparPor(datos.filter(tienePvp), colEcom);
+  const ecomData = Object.keys(porEcom).filter(Boolean)
+    .map(k => ({ ecom: k, pvp: +mediaColumna(porEcom[k], colPvp).toFixed(2) }))
+    .filter(o => o.pvp > 0)
+    .sort((a, b) => b.pvp - a.pvp);
+
+  crearGrafica('ec-chart-barras', 'bar', {
+    labels: ecomData.map(o => o.ecom),
+    datasets: [{
+      label: 'PVP',
+      data: ecomData.map(o => o.pvp),
+      backgroundColor: PALETA.map(c => c + 'cc').slice(0, ecomData.length),
+      borderColor: PALETA.slice(0, ecomData.length),
+      borderWidth: 1, borderRadius: 4,
+    }]
+  }, {
+    indexAxis: 'y',
+    plugins: {
+      legend: { display: false },
+      datalabels: {
+        display: true,
+        color: '#fff',
+        anchor: 'end',
+        align: 'left',
+        clamp: true,
+        font: { weight: 'bold', size: 11 },
+        formatter: v => formatearPrecio(v),
+      },
+    },
+    scales: { x: { ticks: { callback: v => v + ' €' } } },
+    layout: { padding: { right: 12 } },
+  });
+
+  // Tabla: fecha de más reciente a más antigua
+  const datosTabla = [...datos].sort((a, b) => new Date(b[colFecha]) - new Date(a[colFecha]));
+
+  renderizarTabla('ec-tabla', [
+    { key: colFecha,     label: 'Fecha',       formato: v => formatearFecha(v) },
+    { key: colSemana,    label: 'Semana',      formato: v => 'Sem. ' + v },
+    { key: colProducto,  label: 'Producto' },
+    { key: colEcom,      label: 'E-Commerce' },
+    { key: colCategoria, label: 'Categoría' },
+    { key: colPoblacion, label: 'Población' },
+    { key: colPvp,       label: 'PVP',         formato: v => formatearPrecio(v) },
+  ], datosTabla);
+}
+
+// ================================================================
+// RENDER: ECOMMERCE - INFORME COMPARATIVA
+// ================================================================
+function renderEcomInforme() {
+  const todos = D.ecommerce;
+  if (!todos || !todos.length) return;
+
+  // Año actual por defecto en el filtro de fecha (antes de leer las fechas)
+  initFiltrosFecha('ei-filtro-desde', 'ei-filtro-hasta');
+  const filtDesde = getFiltro('ei-filtro-desde');
+  const filtHasta = getFiltro('ei-filtro-hasta');
+
+  // Selecciones múltiples actuales
+  const selProducto  = getMSVals('ei-ms-producto');
+  const selCadena    = getMSVals('ei-ms-cadena');
+  const selCentro    = getMSVals('ei-ms-centro');
+  const selPoblacion = getMSVals('ei-ms-poblacion');
+
+  const colFecha = col(todos[0], COL.E_FECHA);
+
+  // Base: rango de fechas (siempre aplica)
+  let base = todos;
+  if (filtDesde || filtHasta) base = filtrarPorFecha(base, colFecha, filtDesde, filtHasta);
+
+  // Semana: selección única, de más reciente a más antigua
+  rellenarSelect('ei-filtro-semana', base, col(base[0]||{}, COL.E_SEMANA), 'Todas');
+  ordenarSelectNumerico('ei-filtro-semana', true);
+  const fSemana = getFiltro('ei-filtro-semana');
+  let baseSemana = fSemana ? base.filter(r => String(val(r, COL.E_SEMANA)) === fSemana) : base;
+
+  // Filtros múltiples en cascada (array vacío = sin filtro)
+  const inSel = (arr, v) => arr.length === 0 || arr.includes(String(v));
+  const cumple = (r, excepto) =>
+    (excepto === 'producto'  || inSel(selProducto,  val(r, COL.E_PRODUCTO)))  &&
+    (excepto === 'cadena'    || inSel(selCadena,     val(r, COL.E_ECOM)))      &&
+    (excepto === 'centro'    || inSel(selCentro,     val(r, COL.E_CATEGORIA))) &&
+    (excepto === 'poblacion' || inSel(selPoblacion,  val(r, COL.E_POBLACION)));
+
+  rellenarMSGen('ei-ms-producto',  baseSemana.filter(r => cumple(r, 'producto')),  col(baseSemana[0]||{}, COL.E_PRODUCTO),  'Todos', 'renderEcomInforme');
+  rellenarMSGen('ei-ms-cadena',    baseSemana.filter(r => cumple(r, 'cadena')),    col(baseSemana[0]||{}, COL.E_ECOM),      'Todas', 'renderEcomInforme');
+  rellenarMSGen('ei-ms-centro',    baseSemana.filter(r => cumple(r, 'centro')),    col(baseSemana[0]||{}, COL.E_CATEGORIA), 'Todas', 'renderEcomInforme');
+  rellenarMSGen('ei-ms-poblacion', baseSemana.filter(r => cumple(r, 'poblacion')), col(baseSemana[0]||{}, COL.E_POBLACION), 'Todas', 'renderEcomInforme');
+
+  // Re-leer tras repoblar: descarta selecciones ya inválidas
+  const fProducto  = getMSVals('ei-ms-producto');
+  const fCadena    = getMSVals('ei-ms-cadena');
+  const fCentro    = getMSVals('ei-ms-centro');
+  const fPoblacion = getMSVals('ei-ms-poblacion');
+
+  let datos = baseSemana;
+  if (fProducto.length)  datos = datos.filter(r => fProducto.includes(String(val(r, COL.E_PRODUCTO))));
+  if (fCadena.length)    datos = datos.filter(r => fCadena.includes(String(val(r, COL.E_ECOM))));
+  if (fCentro.length)    datos = datos.filter(r => fCentro.includes(String(val(r, COL.E_CATEGORIA))));
+  if (fPoblacion.length) datos = datos.filter(r => fPoblacion.includes(String(val(r, COL.E_POBLACION))));
+
+  renderTablaComparativa('ei-tabla', datos, COL.E_PRODUCTO, COL.E_ECOM, COL.E_PVP);
+}
+
+// ================================================================
+// RENDER: ECOMMERCE - PVP SEMANA
+// ================================================================
+// Al abrir, el filtro Semana arranca con las últimas 4 semanas preseleccionadas.
+let esSemanaInicializada = false;
+function renderEcomSemana() {
+  const todos = D.ecommerce;
+  if (!todos || !todos.length) return;
+
+  // Año actual por defecto en el filtro de fecha (antes de leer las fechas)
+  initFiltrosFecha('es-filtro-desde', 'es-filtro-hasta');
+  const filtDesde = getFiltro('es-filtro-desde');
+  const filtHasta = getFiltro('es-filtro-hasta');
+
+  // Selecciones múltiples actuales
+  const selSemana    = getMSVals('es-ms-semana');
+  const selProducto  = getMSVals('es-ms-producto');
+  const selCadena    = getMSVals('es-ms-cadena');
+  const selCentro    = getMSVals('es-ms-centro');
+  const selPoblacion = getMSVals('es-ms-poblacion');
+
+  const colFecha = col(todos[0], COL.E_FECHA);
+
+  // Base: rango de fechas (siempre aplica)
+  let base = todos;
+  if (filtDesde || filtHasta) base = filtrarPorFecha(base, colFecha, filtDesde, filtHasta);
+
+  // Multiselect en cascada (array vacío = sin filtro)
+  const inSel = (arr, v) => arr.length === 0 || arr.includes(String(v));
+  const cumple = (r, excepto) =>
+    (excepto === 'semana'    || inSel(selSemana,    val(r, COL.E_SEMANA)))    &&
+    (excepto === 'producto'  || inSel(selProducto,  val(r, COL.E_PRODUCTO)))  &&
+    (excepto === 'cadena'    || inSel(selCadena,     val(r, COL.E_ECOM)))      &&
+    (excepto === 'centro'    || inSel(selCentro,     val(r, COL.E_CATEGORIA))) &&
+    (excepto === 'poblacion' || inSel(selPoblacion,  val(r, COL.E_POBLACION)));
+
+  rellenarMSGen('es-ms-semana',    base.filter(r => cumple(r, 'semana')),    col(base[0]||{}, COL.E_SEMANA),    'Todas', 'renderEcomSemana', true);
+  rellenarMSGen('es-ms-producto',  base.filter(r => cumple(r, 'producto')),  col(base[0]||{}, COL.E_PRODUCTO),  'Todos', 'renderEcomSemana');
+  rellenarMSGen('es-ms-cadena',    base.filter(r => cumple(r, 'cadena')),    col(base[0]||{}, COL.E_ECOM),      'Todas', 'renderEcomSemana');
+  rellenarMSGen('es-ms-centro',    base.filter(r => cumple(r, 'centro')),    col(base[0]||{}, COL.E_CATEGORIA), 'Todas', 'renderEcomSemana');
+  rellenarMSGen('es-ms-poblacion', base.filter(r => cumple(r, 'poblacion')), col(base[0]||{}, COL.E_POBLACION), 'Todas', 'renderEcomSemana');
+
+  // Preselección por defecto al abrir: las últimas 4 semanas disponibles.
+  // El flag solo se marca cuando ya hay semanas, para no perder el default si el
+  // primer render ocurre sin datos (carga asíncrona o rango de fechas vacío).
+  if (!esSemanaInicializada) {
+    const semanasDisp = [...new Set(base.filter(r => cumple(r, 'semana')).map(r => Number(val(r, COL.E_SEMANA))))]
+      .filter(n => !isNaN(n)).sort((a, b) => b - a);
+    const ultimas4 = semanasDisp.slice(0, 4).map(String);
+    const panelSem = document.getElementById('es-ms-semana-panel');
+    if (panelSem && panelSem.querySelectorAll('input').length) {
+      panelSem.querySelectorAll('input').forEach(i => { if (ultimas4.includes(i.value)) i.checked = true; });
+      actualizarLblMSGen('es-ms-semana', 'Todas');
+      esSemanaInicializada = true;
+    }
+  }
+
+  // Re-leer tras repoblar
+  const fSemana    = getMSVals('es-ms-semana');
+  const fProducto  = getMSVals('es-ms-producto');
+  const fCadena    = getMSVals('es-ms-cadena');
+  const fCentro    = getMSVals('es-ms-centro');
+  const fPoblacion = getMSVals('es-ms-poblacion');
+
+  let datos = base;
+  if (fSemana.length)    datos = datos.filter(r => fSemana.includes(String(val(r, COL.E_SEMANA))));
+  if (fProducto.length)  datos = datos.filter(r => fProducto.includes(String(val(r, COL.E_PRODUCTO))));
+  if (fCadena.length)    datos = datos.filter(r => fCadena.includes(String(val(r, COL.E_ECOM))));
+  if (fCentro.length)    datos = datos.filter(r => fCentro.includes(String(val(r, COL.E_CATEGORIA))));
+  if (fPoblacion.length) datos = datos.filter(r => fPoblacion.includes(String(val(r, COL.E_POBLACION))));
+
+  // Tabla: columnas = Semana, de más reciente (izquierda) a más antigua (derecha)
+  renderTablaComparativa('es-tabla', datos, COL.E_PRODUCTO, COL.E_SEMANA, COL.E_PVP, {
+    columnasNumericas: true,
+    columnasDesc: true,
+    formatoColumna: c => 'Sem. ' + c,
+  });
+}
+
+// ================================================================
+// HELPER: TABLA PIVOTE (filas=producto, columnas=eje, valor=pvp medio)
+// ================================================================
+function renderTablaComparativa(contenedorId, datos, colFilaOpciones, colColumnaOpciones, colValorOpciones, opts = {}) {
+  const contenedor = document.getElementById(contenedorId);
+  if (!contenedor) return;
+  if (datos.length === 0) { contenedor.innerHTML = '<div class="sin-datos">Sin datos</div>'; return; }
+
+  const colFila    = col(datos[0], colFilaOpciones);
+  const colColumna = col(datos[0], colColumnaOpciones);
+  const colValor   = col(datos[0], colValorOpciones);
+
+  // Excluir vacíos y errores de fórmula (#N/A, #REF!, etc.) de filas y columnas
+  const valido = v => v && !String(v).startsWith('#');
+  const filas    = [...new Set(datos.map(r => r[colFila]))].filter(valido).sort();
+  let columnas   = [...new Set(datos.map(r => r[colColumna]))].filter(valido);
+  if (opts.columnasNumericas) columnas.sort((a, b) => opts.columnasDesc ? Number(b) - Number(a) : Number(a) - Number(b));
+  else columnas.sort();
+  const fmtCol = opts.formatoColumna || (c => c);
+
+  // Pivote
+  const pivote = {};
+  filas.forEach(f => {
+    pivote[f] = {};
+    columnas.forEach(c => {
+      const subset = datos.filter(r => r[colFila] === f && r[colColumna] === c);
+      pivote[f][c] = subset.length > 0 ? mediaColumna(subset, colValor) : null;
+    });
+  });
+
+  let html = '<div class="tabla-contenedor"><table><thead><tr><th>' + colFila + '</th>';
+  columnas.forEach(c => { html += `<th style="text-align:center">${fmtCol(c)}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  filas.forEach(f => {
+    html += `<tr><td style="white-space:normal;max-width:220px">${f}</td>`;
+    columnas.forEach(c => {
+      const v = pivote[f][c];
+      html += `<td style="text-align:center">${v != null ? formatearPrecio(v) : '-'}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  contenedor.innerHTML = html;
+}
+
+// ================================================================
+// INICIALIZAR
+// ================================================================
+// ================================================================
+// MULTISELECT (checkbox dropdown)
+// ================================================================
+function toggleMS(id) {
+  const el = document.getElementById(id);
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.ms-wrap.open').forEach(m => m.classList.remove('open'));
+  if (!isOpen) el.classList.add('open');
+}
+document.addEventListener('click', () => {
+  document.querySelectorAll('.ms-wrap.open').forEach(m => m.classList.remove('open'));
+});
+
+function getMSVals(id) {
+  const panel = document.getElementById(id + '-panel');
+  if (!panel) return [];
+  return Array.from(panel.querySelectorAll('input:checked')).map(i => i.value);
+}
+
+function actualizarLblMS(id) {
+  const vals = getMSVals(id);
+  const lbl = document.getElementById(id + '-lbl');
+  if (!lbl) return;
+  lbl.textContent = vals.length === 0 ? 'Todos' : vals.length === 1 ? vals[0] : `${vals.length} centros`;
+}
+
+function rellenarMS(id, datos, columna) {
+  const panel = document.getElementById(id + '-panel');
+  if (!panel) return;
+  const actuales = getMSVals(id);
+  const valores = [...new Set(datos.map(r => r[columna]))].filter(Boolean).sort();
+  panel.innerHTML = valores.map(v => `
+    <label class="ms-opt">
+      <input type="checkbox" value="${v.replace(/"/g,'&quot;')}" ${actuales.includes(v) ? 'checked' : ''}
+        onchange="actualizarLblMS('${id}'); renderPvpProducto()">
+      <span>${v}</span>
+    </label>`).join('');
+  actualizarLblMS(id);
+}
+
+function resetMS(id) {
+  const panel = document.getElementById(id + '-panel');
+  if (panel) panel.querySelectorAll('input').forEach(i => i.checked = false);
+  const lbl = document.getElementById(id + '-lbl');
+  if (lbl) lbl.textContent = id.includes('semana') ? 'Todas' : 'Todos';
+}
+
+// ================================================================
+// INICIALIZAR
+// ================================================================
+window.addEventListener('DOMContentLoaded', () => {
+  navegarA('visitas');
+  inicializar();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Portal</title>
+  <link rel="stylesheet" href="assets/css/estilos.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      flex-direction: column;
+      gap: 32px;
+      padding: 40px 20px;
+    }
+    .portal-titulo {
+      text-align: center;
+    }
+    .portal-titulo h1 {
+      font-size: 2rem;
+      color: var(--color-primario);
+      margin-bottom: 6px;
+    }
+    .portal-titulo p {
+      color: var(--color-texto-suave);
+      font-size: 0.95rem;
+    }
+    .portal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      max-width: 800px;
+      width: 100%;
+    }
+    .portal-card {
+      background: var(--color-card);
+      border: 1px solid var(--color-borde);
+      border-radius: var(--radio-tarjeta);
+      padding: 24px;
+      text-decoration: none;
+      color: var(--color-texto);
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .portal-card:hover {
+      border-color: var(--color-primario);
+      background: var(--color-card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .portal-card .numero {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--color-primario);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .portal-card .nombre {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .portal-card .descripcion {
+      font-size: 0.8rem;
+      color: var(--color-texto-suave);
+      line-height: 1.4;
+    }
+    .portal-card .flecha {
+      color: var(--color-primario);
+      font-size: 1.2rem;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="portal-titulo">
+    <h1>Dashboard Portal</h1>
+    <p>Selecciona un dashboard para empezar</p>
+  </div>
+
+  <div class="portal-grid">
+    <a href="dashboard-01/index.html" class="portal-card">
+      <span class="numero">Dashboard 01</span>
+      <span class="nombre">Arias</span>
+      <span class="descripcion">GPV y Ecommerce de Burgo de Arias. Precios, lineal, rotura de stock y comparativas.</span>
+      <span class="flecha">→</span>
+    </a>
+  </div>
+</body>
+</html>
