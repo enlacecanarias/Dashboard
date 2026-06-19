@@ -1033,6 +1033,9 @@ function contarFilas(datos) {
       <div class="sidebar-item" data-pagina="pvp-semana" onclick="navegarA('pvp-semana')">
         <span class="icono">📅</span> PVP Medio x Semana
       </div>
+      <div class="sidebar-item" data-pagina="pvp-semana-prod" onclick="navegarA('pvp-semana-prod')">
+        <span class="icono">📈</span> PVP Semana
+      </div>
     </div>
 
     <div class="sidebar-seccion">
@@ -1283,34 +1286,49 @@ function contarFilas(datos) {
     <section class="pagina" id="pagina-analisis-lineal">
       <div class="barra-filtros">
         <div class="filtro-grupo">
-          <label class="filtro-label">Isla</label>
-          <select class="filtro-select" id="al-filtro-isla" onchange="renderAnalisisLineal()">
-            <option value="">Todas</option>
-          </select>
-        </div>
-        <div class="filtro-grupo">
           <label class="filtro-label">Producto</label>
-          <select class="filtro-select" id="al-filtro-producto" onchange="renderAnalisisLineal()" style="min-width:260px">
-            <option value="">Todos</option>
-          </select>
-        </div>
-        <div class="filtro-grupo">
-          <label class="filtro-label">Centro</label>
-          <select class="filtro-select" id="al-filtro-centro" onchange="renderAnalisisLineal()">
-            <option value="">Todos</option>
-          </select>
+          <div class="ms-wrap" id="al-ms-producto" onclick="event.stopPropagation()" style="min-width:260px">
+            <div class="ms-btn" onclick="toggleMS('al-ms-producto')">
+              <span id="al-ms-producto-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="al-ms-producto-panel"></div>
+          </div>
         </div>
         <div class="filtro-grupo">
           <label class="filtro-label">Cadena</label>
-          <select class="filtro-select" id="al-filtro-cadena" onchange="renderAnalisisLineal()">
-            <option value="">Todas</option>
-          </select>
+          <div class="ms-wrap" id="al-ms-cadena" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('al-ms-cadena')">
+              <span id="al-ms-cadena-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="al-ms-cadena-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <div class="ms-wrap" id="al-ms-centro" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('al-ms-centro')">
+              <span id="al-ms-centro-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="al-ms-centro-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <div class="ms-wrap" id="al-ms-isla" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('al-ms-isla')">
+              <span id="al-ms-isla-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="al-ms-isla-panel"></div>
+          </div>
         </div>
         <div class="filtro-grupo">
           <label class="filtro-label">Semana</label>
-          <select class="filtro-select" id="al-filtro-semana" onchange="renderAnalisisLineal()">
-            <option value="">Todas</option>
-          </select>
+          <div class="ms-wrap" id="al-ms-semana" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('al-ms-semana')">
+              <span id="al-ms-semana-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="al-ms-semana-panel"></div>
+          </div>
         </div>
         <div class="filtro-grupo">
           <label class="filtro-label">Desde</label>
@@ -1609,6 +1627,69 @@ function contarFilas(datos) {
       <div class="tarjeta">
         <div class="tarjeta-titulo">Tabla PVP medio: Producto x Semana</div>
         <div id="pms-tabla"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PÁGINA: PVP SEMANA (Producto x Centro x Semana) -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <section class="pagina" id="pagina-pvp-semana-prod">
+      <div class="barra-filtros">
+        <div class="filtro-grupo filtro-grupo-destacado">
+          <label class="filtro-label">Producto</label>
+          <select class="filtro-select" id="pvs-filtro-producto" onchange="renderPvpSemanaProd()" style="min-width:260px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Cadena</label>
+          <div class="ms-wrap" id="pvs-ms-cadena" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pvs-ms-cadena')">
+              <span id="pvs-ms-cadena-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pvs-ms-cadena-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Centro</label>
+          <div class="ms-wrap" id="pvs-ms-centro" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pvs-ms-centro')">
+              <span id="pvs-ms-centro-lbl">Todos</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pvs-ms-centro-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Semana</label>
+          <div class="ms-wrap" id="pvs-ms-semana" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pvs-ms-semana')">
+              <span id="pvs-ms-semana-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pvs-ms-semana-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Isla</label>
+          <div class="ms-wrap" id="pvs-ms-isla" onclick="event.stopPropagation()">
+            <div class="ms-btn" onclick="toggleMS('pvs-ms-isla')">
+              <span id="pvs-ms-isla-lbl">Todas</span><span class="ms-arrow">▾</span>
+            </div>
+            <div class="ms-panel" id="pvs-ms-isla-panel"></div>
+          </div>
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Desde</label>
+          <input type="date" class="filtro-input" id="pvs-filtro-desde" onchange="renderPvpSemanaProd()">
+        </div>
+        <div class="filtro-grupo">
+          <label class="filtro-label">Hasta</label>
+          <input type="date" class="filtro-input" id="pvs-filtro-hasta" onchange="renderPvpSemanaProd()">
+        </div>
+        <button class="btn btn-secundario" onclick="resetFiltros('pvp-semana-prod')">Restablecer</button>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">Tabla PVP medio: Centro x Semana</div>
+        <div id="pvs-tabla"></div>
       </div>
     </section>
 
@@ -2048,6 +2129,7 @@ const TITULOS = {
   'informe-comparativa':'Informe Comparativa',
   'pvp-cadenas':        'PVP Medio x Cadenas',
   'pvp-semana':         'PVP Medio x Semana',
+  'pvp-semana-prod':    'PVP Semana',
   'ecom-comparativa':   'Comparativa PVP Ecommerce',
   'ecom-informe':       'Informe Comparativa Ecommerce',
   'ecom-semana':        'PVP Semana Ecommerce',
@@ -2085,6 +2167,7 @@ function renderPagina(id) {
     'informe-comparativa':renderInformeComparativa,
     'pvp-cadenas':        renderPvpCadenas,
     'pvp-semana':         renderPvpSemana,
+    'pvp-semana-prod':    renderPvpSemanaProd,
     'ecom-comparativa':   renderEcomComparativa,
     'ecom-informe':       renderEcomInforme,
     'ecom-semana':        renderEcomSemana,
@@ -2103,12 +2186,14 @@ function resetFiltros(pagina) {
     'informe-comparativa':'ic',
     'pvp-cadenas':        'pmc',
     'pvp-semana':         'pms',
+    'pvp-semana-prod':    'pvs',
     'ecom-comparativa':   'ec',
     'ecom-informe':       'ei',
     'ecom-semana':        'es',
   };
   const pref = prefijos[pagina];
   document.querySelectorAll(`[id^="${pref}-filtro"]`).forEach(el => { el.value = ''; });
+  if (pagina === 'analisis-lineal') { resetMS('al-ms-producto'); resetMS('al-ms-cadena'); resetMS('al-ms-centro'); resetMS('al-ms-isla'); resetMS('al-ms-semana'); }
   if (pagina === 'pvp-producto')    { resetMS('pp-ms-centro'); resetMS('pp-ms-semana'); }
   if (pagina === 'pvp-centro')      { resetMS('pc-ms-producto'); }
   if (pagina === 'comparativa-pvp') { resetMS('cp-ms-centro'); }
@@ -2116,6 +2201,7 @@ function resetFiltros(pagina) {
   if (pagina === 'informe-comparativa') { resetMS('ic-ms-cadena'); resetMS('ic-ms-centro'); resetMS('ic-ms-producto'); icSemanaInicializada = false; }
   if (pagina === 'pvp-cadenas')         { resetMS('pmc-ms-cadena'); resetMS('pmc-ms-centro'); resetMS('pmc-ms-producto'); pmcSemanaInicializada = false; }
   if (pagina === 'pvp-semana')          { resetMS('pms-ms-centro'); resetMS('pms-ms-semana'); resetMS('pms-ms-producto'); resetMS('pms-ms-isla'); pmsSemanaInicializada = false; }
+  if (pagina === 'pvp-semana-prod')     { resetMS('pvs-ms-cadena'); resetMS('pvs-ms-centro'); resetMS('pvs-ms-semana'); resetMS('pvs-ms-isla'); pvsSemanaInicializada = false; }
   if (pagina === 'ecom-informe')        { resetMS('ei-ms-producto'); resetMS('ei-ms-cadena'); resetMS('ei-ms-centro'); resetMS('ei-ms-poblacion'); }
   if (pagina === 'ecom-semana')         { resetMS('es-ms-semana'); resetMS('es-ms-producto'); resetMS('es-ms-cadena'); resetMS('es-ms-centro'); resetMS('es-ms-poblacion'); esSemanaInicializada = false; }
   renderPagina(pagina);
@@ -2750,54 +2836,54 @@ function renderAnalisisLineal() {
   initFiltrosFecha('al-filtro-desde', 'al-filtro-hasta');
 
   const centroIslaMap = getCentroIslaMap();
-  const filtIsla     = getFiltro('al-filtro-isla');
-  const filtProducto = getFiltro('al-filtro-producto');
-  const filtCentro   = getFiltro('al-filtro-centro');
-  const filtCadena   = getFiltro('al-filtro-cadena');
-  const filtSemana   = getFiltro('al-filtro-semana');
+  const islaDe = r => centroIslaMap[val(r, COL.P_CENTRO)] || '';
   const filtDesde    = getFiltro('al-filtro-desde');
   const filtHasta    = getFiltro('al-filtro-hasta');
+
+  // Selecciones múltiples actuales (arrays de strings)
+  const selProducto = getMSVals('al-ms-producto');
+  const selCadena   = getMSVals('al-ms-cadena');
+  const selCentro   = getMSVals('al-ms-centro');
+  const selIsla     = getMSVals('al-ms-isla');
+  const selSemana   = getMSVals('al-ms-semana');
 
   const todos = D.productosPvp;
   const colFecha = col(todos[0]||{}, COL.P_FECHA);
 
-  // Poblar selector de isla (lista completa de islas)
-  const islas = [...new Set(Object.values(centroIslaMap))].filter(i => i && !i.startsWith('#'));
-  rellenarSelectVals('al-filtro-isla', islas, 'Todas');
-
-  // Fecha e isla siempre aplican (no son dropdown en cascada): son la base.
+  // Fecha siempre aplica: es la base.
   let base = (filtDesde || filtHasta)
     ? filtrarPorFecha(todos, colFecha, filtDesde, filtHasta)
     : todos;
-  if (filtIsla) base = base.filter(r => centroIslaMap[val(r, COL.P_CENTRO)] === filtIsla);
 
-  // Filtros en cascada: cada dropdown se construye con los datos que cumplen
-  // TODOS los demás filtros activos (no el propio) dentro del rango de fechas.
+  // Filtros múltiples en cascada: cada dropdown se construye con los datos que cumplen
+  // TODOS los demás filtros activos (no el propio). Array vacío = sin filtro.
+  const inSel = (arr, v) => arr.length === 0 || arr.includes(String(v));
   const cumple = (r, excepto) =>
-    (excepto === 'producto' || !filtProducto || val(r, COL.P_PRODUCTO) === filtProducto) &&
-    (excepto === 'centro'   || !filtCentro   || val(r, COL.P_CENTRO)   === filtCentro)   &&
-    (excepto === 'cadena'   || !filtCadena   || val(r, COL.P_CADENA)   === filtCadena)   &&
-    (excepto === 'semana'   || !filtSemana   || String(val(r, COL.P_SEMANA)) === filtSemana);
+    (excepto === 'producto' || inSel(selProducto, val(r, COL.P_PRODUCTO))) &&
+    (excepto === 'cadena'   || inSel(selCadena,   val(r, COL.P_CADENA)))   &&
+    (excepto === 'centro'   || inSel(selCentro,   val(r, COL.P_CENTRO)))   &&
+    (excepto === 'isla'     || inSel(selIsla,     islaDe(r)))              &&
+    (excepto === 'semana'   || inSel(selSemana,   val(r, COL.P_SEMANA)));
 
-  rellenarSelect('al-filtro-producto', base.filter(r => cumple(r, 'producto')), col(base[0]||{}, COL.P_PRODUCTO));
-  rellenarSelect('al-filtro-centro',   base.filter(r => cumple(r, 'centro')),   col(base[0]||{}, COL.P_CENTRO));
-  rellenarSelect('al-filtro-cadena',   base.filter(r => cumple(r, 'cadena')),   col(base[0]||{}, COL.P_CADENA));
-  rellenarSelect('al-filtro-semana',   base.filter(r => cumple(r, 'semana')),   col(base[0]||{}, COL.P_SEMANA));
-
-  // Semana ordenada numéricamente (no alfabéticamente: 1,2,3...10,11)
-  ordenarSelectNumerico('al-filtro-semana');
+  rellenarMSGen('al-ms-producto', base.filter(r => cumple(r, 'producto')), col(base[0]||{}, COL.P_PRODUCTO), 'Todos', 'renderAnalisisLineal');
+  rellenarMSGen('al-ms-cadena',   base.filter(r => cumple(r, 'cadena')),   col(base[0]||{}, COL.P_CADENA),   'Todas', 'renderAnalisisLineal');
+  rellenarMSGen('al-ms-centro',   base.filter(r => cumple(r, 'centro')),   col(base[0]||{}, COL.P_CENTRO),   'Todos', 'renderAnalisisLineal');
+  rellenarMSGenVals('al-ms-isla', base.filter(r => cumple(r, 'isla')).map(islaDe),                          'Todas', 'renderAnalisisLineal');
+  rellenarMSGen('al-ms-semana',   base.filter(r => cumple(r, 'semana')),   col(base[0]||{}, COL.P_SEMANA),   'Todas', 'renderAnalisisLineal', true);
 
   // Re-leer tras repoblar: descarta selecciones que ya no son válidas
-  const fProducto = getFiltro('al-filtro-producto');
-  const fCentro   = getFiltro('al-filtro-centro');
-  const fCadena   = getFiltro('al-filtro-cadena');
-  const fSemana   = getFiltro('al-filtro-semana');
+  const fProducto = getMSVals('al-ms-producto');
+  const fCadena   = getMSVals('al-ms-cadena');
+  const fCentro   = getMSVals('al-ms-centro');
+  const fIsla     = getMSVals('al-ms-isla');
+  const fSemana   = getMSVals('al-ms-semana');
 
   let datos = base;
-  if (fProducto) datos = datos.filter(r => val(r, COL.P_PRODUCTO) === fProducto);
-  if (fCentro)   datos = datos.filter(r => val(r, COL.P_CENTRO) === fCentro);
-  if (fCadena)   datos = datos.filter(r => val(r, COL.P_CADENA) === fCadena);
-  if (fSemana)   datos = datos.filter(r => String(val(r, COL.P_SEMANA)) === fSemana);
+  if (fProducto.length) datos = datos.filter(r => fProducto.includes(String(val(r, COL.P_PRODUCTO))));
+  if (fCadena.length)   datos = datos.filter(r => fCadena.includes(String(val(r, COL.P_CADENA))));
+  if (fCentro.length)   datos = datos.filter(r => fCentro.includes(String(val(r, COL.P_CENTRO))));
+  if (fIsla.length)     datos = datos.filter(r => fIsla.includes(islaDe(r)));
+  if (fSemana.length)   datos = datos.filter(r => fSemana.includes(String(val(r, COL.P_SEMANA))));
 
   const conRotura = datos.filter(r => {
     const v = String(val(r, COL.P_ROTURA)).toUpperCase();
@@ -3242,6 +3328,85 @@ function renderPvpSemana() {
 
   // Tabla: columnas = Semana, ordenadas de más reciente (izquierda) a más antigua (derecha).
   renderTablaComparativa('pms-tabla', datos, COL.P_PRODUCTO, COL.P_SEMANA, COL.P_PVP, {
+    columnasNumericas: true,
+    columnasDesc: true,
+    formatoColumna: c => 'Sem. ' + c,
+  });
+}
+
+// ================================================================
+// RENDER: PVP SEMANA (Producto único x Centro x Semana)
+// ================================================================
+// Producto en selección única (filtro principal). Centro, Semana e Isla múltiples.
+// Tabla: filas = Centro, columnas = Semana (más reciente a la izquierda), valor = PVP medio.
+// Semana arranca con las últimas 4 semanas preseleccionadas.
+let pvsSemanaInicializada = false;
+function renderPvpSemanaProd() {
+  // Año actual por defecto (antes de leer las fechas)
+  initFiltrosFecha('pvs-filtro-desde', 'pvs-filtro-hasta');
+
+  const centroIslaMap = getCentroIslaMap();
+  const islaDe = r => centroIslaMap[val(r, COL.P_CENTRO)] || '';
+  const filtDesde = getFiltro('pvs-filtro-desde');
+  const filtHasta = getFiltro('pvs-filtro-hasta');
+
+  // Selecciones múltiples actuales (arrays de strings)
+  const selCadena = getMSVals('pvs-ms-cadena');
+  const selCentro = getMSVals('pvs-ms-centro');
+  const selSemana = getMSVals('pvs-ms-semana');
+  const selIsla   = getMSVals('pvs-ms-isla');
+
+  const todos = D.productosPvp;
+  const colFecha = col(todos[0]||{}, COL.P_FECHA);
+
+  // Base: fecha (siempre aplica)
+  let baseFecha = (filtDesde || filtHasta) ? filtrarPorFecha(todos, colFecha, filtDesde, filtHasta) : todos;
+
+  // Producto: selección única. Se puebla con la base por fecha y se aplica.
+  rellenarSelect('pvs-filtro-producto', baseFecha, col(baseFecha[0]||{}, COL.P_PRODUCTO), 'Todos');
+  const fProducto = getFiltro('pvs-filtro-producto');
+  let base = fProducto ? baseFecha.filter(r => val(r, COL.P_PRODUCTO) === fProducto) : baseFecha;
+
+  // Filtros múltiples en cascada (cadena, isla, centro, semana): array vacío = sin filtro.
+  const inSel = (arr, v) => arr.length === 0 || arr.includes(String(v));
+  const cumple = (r, excepto) =>
+    (excepto === 'cadena' || inSel(selCadena, val(r, COL.P_CADENA)))    &&
+    (excepto === 'isla'   || inSel(selIsla,   islaDe(r)))               &&
+    (excepto === 'centro' || inSel(selCentro, val(r, COL.P_CENTRO)))    &&
+    (excepto === 'semana' || inSel(selSemana, val(r, COL.P_SEMANA)));
+
+  rellenarMSGen('pvs-ms-cadena',     base.filter(r => cumple(r, 'cadena')), col(base[0]||{}, COL.P_CADENA),  'Todas', 'renderPvpSemanaProd');
+  rellenarMSGenVals('pvs-ms-isla',   base.filter(r => cumple(r, 'isla')).map(islaDe),            'Todas', 'renderPvpSemanaProd');
+  rellenarMSGen('pvs-ms-centro',     base.filter(r => cumple(r, 'centro')), col(base[0]||{}, COL.P_CENTRO), 'Todos', 'renderPvpSemanaProd');
+  rellenarMSGen('pvs-ms-semana',     base.filter(r => cumple(r, 'semana')), col(base[0]||{}, COL.P_SEMANA), 'Todas', 'renderPvpSemanaProd', true);
+
+  // Preselección por defecto: las últimas 4 semanas disponibles.
+  if (!pvsSemanaInicializada) {
+    const semanasDisp = [...new Set(base.filter(r => cumple(r, 'semana')).map(r => Number(val(r, COL.P_SEMANA))))]
+      .filter(n => !isNaN(n)).sort((a, b) => b - a);
+    const ultimas4 = semanasDisp.slice(0, 4).map(String);
+    const panelSem = document.getElementById('pvs-ms-semana-panel');
+    if (panelSem && panelSem.querySelectorAll('input').length) {
+      panelSem.querySelectorAll('input').forEach(i => { if (ultimas4.includes(i.value)) i.checked = true; });
+      actualizarLblMSGen('pvs-ms-semana', 'Todas');
+      pvsSemanaInicializada = true;
+    }
+  }
+
+  // Re-leer tras repoblar / preseleccionar
+  const fCadena = getMSVals('pvs-ms-cadena');
+  const fIsla   = getMSVals('pvs-ms-isla');
+  const fCentro = getMSVals('pvs-ms-centro');
+  const fSemana = getMSVals('pvs-ms-semana');
+
+  let datos = base;
+  if (fCadena.length) datos = datos.filter(r => fCadena.includes(String(val(r, COL.P_CADENA))));
+  if (fIsla.length)   datos = datos.filter(r => fIsla.includes(islaDe(r)));
+  if (fCentro.length) datos = datos.filter(r => fCentro.includes(String(val(r, COL.P_CENTRO))));
+  if (fSemana.length) datos = datos.filter(r => fSemana.includes(String(val(r, COL.P_SEMANA))));
+
+  // Tabla: filas = Centro, columnas = Semana (más reciente a la izquierda), valor = PVP medio.
+  renderTablaComparativa('pvs-tabla', datos, COL.P_CENTRO, COL.P_SEMANA, COL.P_PVP, {
     columnasNumericas: true,
     columnasDesc: true,
     formatoColumna: c => 'Sem. ' + c,
