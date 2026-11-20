@@ -545,3 +545,48 @@ function diagnosticoFirestore() {
   Logger.log('runQuery code: ' + resp2.getResponseCode());
   Logger.log('runQuery body: ' + resp2.getContentText().slice(0, 500));
 }
+
+// =============================================================
+// BACKFILL: sube SOLO la cola que falta (sin reescribir historico)
+// Cuenta cuantos docs hay ya en Firebase y sube solo las filas nuevas.
+// Uso: tras una parada de sincronizacion, para recuperar el hueco.
+// =============================================================
+function _fbCount(coleccion) {
+  var url = 'https://firestore.googleapis.com/v1/projects/' + FIREBASE_CONFIG.projectId +
+            '/databases/(default)/documents:runAggregationQuery';
+  var q = { structuredAggregationQuery: { structuredQuery: { from: [{ collectionId: coleccion }] },
+            aggregations: [{ alias: 'c', count: {} }] } };
+  var r = UrlFetchApp.fetch(url, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
+    payload: JSON.stringify(q),
+    muteHttpExceptions: true
+  });
+  try {
+    var j = JSON.parse(r.getContentText());
+    return parseInt(j[0].result.aggregateFields.c.integerValue, 10);
+  } catch (e) {
+    Logger.log('count err ' + coleccion + ': ' + r.getContentText().slice(0, 200));
+    return -1;
+  }
+}
+
+function backfillFaltante() {
+  var ssG = SpreadsheetApp.openById(SHEET_IDS.gpv);
+  var ssE = SpreadsheetApp.openById(SHEET_IDS.ecommerce);
+  var V = obtenerFilasParaFirebase(ssG.getSheetByName('Copia Visitas'));
+  var P = obtenerFilasParaFirebase(ssG.getSheetByName('Copia Productos'));
+  var E = obtenerFilasParaFirebase(ssE.getSheetByName('Ecommerce'));
+  var cV = _fbCount('visitas_arias'), cP = _fbCount('productos_arias'), cE = _fbCount('ecommerce_arias');
+  Logger.log('Sheet filtrado  V=' + V.length + '  P=' + P.length + '  E=' + E.length);
+  Logger.log('Firebase actual V=' + cV + '  P=' + cP + '  E=' + cE);
+  if (cV < 0 || cP < 0 || cE < 0) { Logger.log('ABORTADO: no se pudo contar Firebase'); return; }
+  var dV = V.slice(cV).map(function(r, i) { return { docId: String(r['form_id'] || (cV + i)), datos: r }; });
+  var dP = P.slice(cP).map(function(r, i) { return { docId: 'prod_' + (cP + i), datos: r }; });
+  var dE = E.slice(cE).map(function(r, i) { return { docId: String(r['form_id'] || ('eco_' + (cE + i))), datos: r }; });
+  Logger.log('A subir (faltan)  V=' + dV.length + '  P=' + dP.length + '  E=' + dE.length);
+  if (dV.length) batchWriteDocumentos('visitas_arias', dV);
+  if (dP.length) batchWriteDocumentos('productos_arias', dP);
+  if (dE.length) batchWriteDocumentos('ecommerce_arias', dE);
+  Logger.log('=== BACKFILL COMPLETO ===');
+}
